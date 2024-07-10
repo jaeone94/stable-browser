@@ -79,4 +79,4 @@ This project is licensed under the MIT License.
 
 ---
 
-Stable Browser is built with SwiftUI and leverages the power of Stable Diffusion for AI image generation. For any questions or support, please open an issue on the GitHub repository.
+Stable Browser is built with SwiftUI and leverages the power of Stable Diffusion for AI image generation. For questions or support, please open an issue in the GitHub repository or contact me at jaeone.prt@gmail.com
