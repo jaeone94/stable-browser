@@ -1,0 +1,16 @@
+enum HiResUpscaler: String {
+    case none = "None"
+    case latent = "Latent"
+    case latentAntialiased = "Latent (antialiased)"
+    case latentBicubic = "Latent (bicubic)"
+    case latentBicubicAntialiased = "Latent (bicubic antialiased)"
+    case latentNearest = "Latent (nearest)"
+    case latentNearestExact = "Latent (nearest-exact)"
+    case lanczos = "Lanczos"
+    case nearest = "Nearest"
+    case esrgan4x = "R-ESRGAN 4x+"
+    case ldsr = "LDSR"
+    case scunetGAN = "ScuNET GAN"
+    case scunetPSNR = "ScuNET PSNR"
+    case swinIR4x = "SwinIR 4x"
+}

@@ -1,0 +1,22 @@
+{
+  "configurations" : [
+    {
+      "id" : "6577578E-AF1F-49C8-A244-22D797B7EB75",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:StableBrowser.xcodeproj",
+      "identifier" : "C6EDB3F52B8492B9003A5EAE",
+      "name" : "StableBrowser"
+    }
+  },
+  "testTargets" : [
+
+  ],
+  "version" : 1
+}
