@@ -130,6 +130,8 @@ struct StableCanvasView: View {
                     .padding(.bottom, 15)
                     .frame(height: (isZoomPanMode || isDrawingMode || isCropMode ? 60 : 0))
                     drawingTools
+                        .padding(.bottom)
+                        .padding(.top, -10)
                 }
                 .frame(height: (isZoomPanMode || isDrawingMode || isCropMode ? 140 : 80))
                 .padding(.horizontal)
