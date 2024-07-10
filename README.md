@@ -10,11 +10,18 @@ StableBrowser is an web browser application with integrated AI image generation 
 This app uses the API in [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to generate images.
 
 ## Table of Contents
+- [Contact](#contact)
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Components](#components)
 - [License](#license)
+
+## Contact
+For any inquiries, reports, bug notifications, or concerns regarding this app, please contact us at:  
+### jaeone.prt@gmail.com
+Alternatively, you can raise an issue on this page.  
+### We appreciate your feedback and are committed to improving your experience with our app.
 
 ## Features
 
