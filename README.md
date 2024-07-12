@@ -1,13 +1,26 @@
-# StableBrowser
-<img
-  src="StableBrowser/Resources/Images/appIcon.png"
-  width="100"
-  height="100"
-/>
+<table style="border-collapse: collapse; border: none;">
+  <tr style="border: none;">
+    <td style="vertical-align: middle; border: none;">
+      <a href="https://apps.apple.com/app/stablebrowser/id6502819190"><img src="StableBrowser/Resources/Images/appIcon.png" width="75" height="75" /></a>
+    </td>
+    <td style="vertical-align: middle; padding-left: 10px; border: none;">
+      <h1 style="margin: 0;">StableBrowser</h1>
+    </td>
+  </tr>
+</table>
 
 StableBrowser is an web browser application with integrated AI image generation capabilities. It combines traditional web browsing functionality with advanced features for AI-assisted image creation and manipulation.
 
-This app uses the API in [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to generate images.
+This app uses the API in [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to generate images.    
+  
+<a href="https://apps.apple.com/app/stablebrowser/id6502819190">
+ <img
+  src="https://github.com/user-attachments/assets/794cdd01-2731-498c-a4bf-442e21059d85"
+  width="220"
+  height="75"
+  />
+</a>
+ 
 
 ## Table of Contents
 - [Contact](#contact)
