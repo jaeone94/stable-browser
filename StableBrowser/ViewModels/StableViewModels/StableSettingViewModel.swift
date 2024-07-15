@@ -37,6 +37,11 @@ class StableSettingViewModel : ObservableObject {
     @Published var maskInvert: Int = 0 // 0: inpaint masked, 1: inpaint not masked
     @Published var inpaintFullRes: Int = 0 // 0: whole picture, 1: only masked
     @Published var inpaintFullResPadding: Int = 32 // only masked padding pixels    
+    
+    @Published var softInpainting: Bool = false
+    @Published var scheduleBias: Double = 1.0
+    @Published var preservationStrength: Double = 0.5
+    @Published var transitionContrastBoost: Double = 4.0
 
     // maximum image size (width or height, whichever is larger)
     @Published var maxImageSize: Int = -1
@@ -140,6 +145,7 @@ class StableSettingViewModel : ObservableObject {
             saveLocalPromptStyles()
             saveIsInpaintMode()
             saveTxt2ImgSettings()
+            saveSoftInpaintingSettings()
         }
     }
 
@@ -163,6 +169,7 @@ class StableSettingViewModel : ObservableObject {
         loadLocalPromptStyles()
         loadIsInpaintMode()
         loadTxt2ImgSettings()
+        loadSoftInpaintingSettings()
     }
     
     private func saveTxt2ImgSettings() {
@@ -773,6 +780,42 @@ class StableSettingViewModel : ObservableObject {
             self.isInpaintMode = setting.isInpaintMode
         } else {
             self.isInpaintMode = false
+        }
+    }
+    
+    func saveSoftInpaintingSettings() {
+        let realm = try! Realm()
+        try! realm.write {
+            if let setting = realm.objects(StableSettings.self).first {
+                setting.softInpainting = self.softInpainting
+                setting.scheduleBias = self.scheduleBias
+                setting.preservationStrength = self.preservationStrength
+                setting.transitionContrastBoost = self.transitionContrastBoost
+            } else {
+                let newSetting = StableSettings()
+                newSetting.softInpainting = self.softInpainting
+                newSetting.scheduleBias = self.scheduleBias
+                newSetting.preservationStrength = self.preservationStrength
+                newSetting.transitionContrastBoost = self.transitionContrastBoost
+                realm.add(newSetting)
+            }
+        }
+    }
+
+    func loadSoftInpaintingSettings() {
+        let realm = try! Realm()
+        if let setting = realm.objects(StableSettings.self).first {
+            if setting.transitionContrastBoost == 0 {
+                self.softInpainting = false
+                self.scheduleBias = 1
+                self.preservationStrength = 0.5
+                self.transitionContrastBoost = 4
+            }else {
+                self.softInpainting = setting.softInpainting
+                self.scheduleBias = setting.scheduleBias
+                self.preservationStrength = setting.preservationStrength
+                self.transitionContrastBoost = setting.transitionContrastBoost
+            }
         }
     }
 }

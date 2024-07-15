@@ -13,6 +13,10 @@ class StableSettings: Object {
     @Persisted var maskInvert: Int = 0
     @Persisted var inpaintFullRes: Int = 0
     @Persisted var inpaintFullResPadding: Int = 32
+    @Persisted var softInpainting: Bool = false
+    @Persisted var scheduleBias: Double = 1.0
+    @Persisted var preservationStrength: Double = 0.5
+    @Persisted var transitionContrastBoost: Double = 4.0
     @Persisted var clipSkip: Int = 1
     @Persisted var selectedSdVae: String = "Automatic"
     @Persisted var selectedPromptStyles: List<String> = List<String>()

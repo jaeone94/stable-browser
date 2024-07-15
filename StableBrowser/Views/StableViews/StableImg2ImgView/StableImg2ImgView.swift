@@ -280,7 +280,23 @@ struct StableImg2ImgView: View {
             }
 
         if let api = viewModel.webUIApi {            
-            Task {
+            Task {           
+                let softInpaintingArgs: [String: Any] = [
+                    "Soft inpainting": viewModel.isInpaintMode ? viewModel.softInpainting : false,
+                    "Schedule bias": viewModel.scheduleBias,
+                    "Preservation strength": viewModel.preservationStrength,
+                    "Transition contrast boost": viewModel.transitionContrastBoost,
+                    "Mask influence": 0,
+                    "Difference threshold": 0.5,
+                    "Difference contrast": 2,
+                ]
+
+                let alwaysonScripts: [String: [String: Any]] = [
+                    "soft inpainting": [
+                        "args": [softInpaintingArgs]
+                    ]
+                ]
+                
                 let webUIApiResult = await api.img2img(
                     mode: isInpaintMode ? .inpaint : .normal
                    , initImages: [baseImage]
@@ -309,7 +325,7 @@ struct StableImg2ImgView: View {
                    ]
                    , sendImages: true
                    , saveImages: false
-                   , alwaysonScripts: [:]
+                    , alwaysonScripts: alwaysonScripts
                 )
                 
                 timer?.invalidate()
@@ -552,6 +568,43 @@ struct InpaintOptionsSection: View {
             MaskInvertPicker(maskInvert: $viewModel.maskInvert)
             InpaintFullResPicker(inpaintFullRes: $viewModel.inpaintFullRes)
             InpaintFullResPaddingSlider(inpaintFullResPadding: $viewModel.inpaintFullResPadding)
+            
+            Toggle(isOn: $viewModel.softInpainting) {
+                Text("Soft Inpainting")
+            }
+            
+            if viewModel.softInpainting {
+                SoftInpaintingSection(viewModel: viewModel)
+            }
+        }
+    }
+}
+
+struct SoftInpaintingSection: View {
+    @ObservedObject var viewModel: StableSettingViewModel
+    
+    var body: some View {
+        VStack {
+            HStack {
+                Text("Schedule Bias")
+                Spacer()
+                Text("\(viewModel.scheduleBias, specifier: "%.1f")")
+            }
+            Slider(value: $viewModel.scheduleBias, in: 0...8, step: 0.1)
+            
+            HStack {
+                Text("Preservation Strength")
+                Spacer()
+                Text("\(viewModel.preservationStrength, specifier: "%.2f")")
+            }
+            Slider(value: $viewModel.preservationStrength, in: 0...8, step: 0.05)
+            
+            HStack {
+                Text("Transition Contrast Boost")
+                Spacer()
+                Text("\(viewModel.transitionContrastBoost, specifier: "%.2f")")
+            }
+            Slider(value: $viewModel.transitionContrastBoost, in: 1...32, step: 0.05)
         }
     }
 }
