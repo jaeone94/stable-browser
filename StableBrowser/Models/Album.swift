@@ -8,4 +8,10 @@ class Album: Object, Identifiable {
     @Persisted var isSecret: Bool // Indicates if the album is secret
     @Persisted var password: String? // Password stored as SHA256 hash
     @Persisted var photos: List<SecurePhoto> // Photos inside the album
+    
+    func updateThumbnail() {
+        // update thumbnail with the last photo using createdAt
+        let sortedPhotos = photos.sorted(byKeyPath: "createdAt", ascending: false)
+        thumbnail = sortedPhotos.first        
+    }
 }

@@ -12,6 +12,27 @@ class ImageViewModel: ObservableObject {
     @Published var selectedIndex: Int = 0
     @Published var selectedPhotos: [OpenPhoto] = []
     
+    @Published var lastSavedAlbumId: ObjectId? {
+        didSet {
+            UserDefaults.standard.set(lastSavedAlbumId?.stringValue, forKey: "lastSavedAlbumId")
+        }
+    }
+    
+    init() {
+        loadLastSavedAlbumId()
+    }
+    
+    func loadLastSavedAlbumId() {
+        if let idString = UserDefaults.standard.string(forKey: "lastSavedAlbumId"),
+           let objectId = try? ObjectId(string: idString) {
+            lastSavedAlbumId = objectId
+        }
+    }
+    
+    func updateLastSavedAlbum(_ album: Album) {
+        lastSavedAlbumId = album.id
+    }
+    
         
     func sortPhotos() {
         if sortDescending {

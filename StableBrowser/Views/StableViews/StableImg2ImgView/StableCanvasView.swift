@@ -270,8 +270,6 @@ struct StableCanvasView: View {
     func printIamgeSize(image: UIImage) {
         let sizeInPoints = image.size
         let sizeInPixels = CGSize(width: sizeInPoints.width * image.scale, height: sizeInPoints.height * image.scale)
-        print("스냅샷 크기 (포인트): \(sizeInPoints)") 
-        print("스냅샷 크기 (픽셀): \(sizeInPixels)") 
     }
 
     func resetZoomPan() {

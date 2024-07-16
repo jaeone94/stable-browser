@@ -63,6 +63,9 @@
 		C681D08A2BB07300006E7090 /* SDVAESettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C681D0892BB07300006E7090 /* SDVAESettingView.swift */; };
 		C681D08C2BB0774B006E7090 /* OverrideSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C681D08B2BB0774B006E7090 /* OverrideSettings.swift */; };
 		C68C852B2B99B33B009F90B4 /* BrowserTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68C852A2B99B33B009F90B4 /* BrowserTabView.swift */; };
+		C68F9C2A2C45F73A00FAB088 /* ActivityItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C292C45F73A00FAB088 /* ActivityItem.swift */; };
+		C68F9C2C2C45F79000FAB088 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C2B2C45F79000FAB088 /* ActivityView.swift */; };
+		C68F9C2E2C461D1300FAB088 /* PhotosMoveDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C2D2C461D1300FAB088 /* PhotosMoveDialog.swift */; };
 		C69050842BABCA97005ED598 /* StableImg2ImgView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69050832BABCA97005ED598 /* StableImg2ImgView.swift */; };
 		C69050862BAC1F19005ED598 /* StableCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69050852BAC1F19005ED598 /* StableCanvasView.swift */; };
 		C69050882BACA7D8005ED598 /* StableStyleSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69050872BACA7D8005ED598 /* StableStyleSelectView.swift */; };
@@ -171,6 +174,9 @@
 		C681D0892BB07300006E7090 /* SDVAESettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDVAESettingView.swift; sourceTree = "<group>"; };
 		C681D08B2BB0774B006E7090 /* OverrideSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverrideSettings.swift; sourceTree = "<group>"; };
 		C68C852A2B99B33B009F90B4 /* BrowserTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserTabView.swift; sourceTree = "<group>"; };
+		C68F9C292C45F73A00FAB088 /* ActivityItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityItem.swift; sourceTree = "<group>"; };
+		C68F9C2B2C45F79000FAB088 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
+		C68F9C2D2C461D1300FAB088 /* PhotosMoveDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosMoveDialog.swift; sourceTree = "<group>"; };
 		C69050832BABCA97005ED598 /* StableImg2ImgView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StableImg2ImgView.swift; sourceTree = "<group>"; };
 		C69050852BAC1F19005ED598 /* StableCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StableCanvasView.swift; sourceTree = "<group>"; };
 		C69050872BACA7D8005ED598 /* StableStyleSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StableStyleSelectView.swift; sourceTree = "<group>"; };
@@ -391,6 +397,7 @@
 		C63AC8742BAAD5330052B471 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				C68F9C282C45F72600FAB088 /* ActivityView */,
 				C65210492BBE63C000EA1E51 /* MenuSwitcher.swift */,
 				C63AC8752BAAD5450052B471 /* SpinnerView.swift */,
 				C65210472BBE536F00EA1E51 /* Toast.swift */,
@@ -406,6 +413,7 @@
 			children = (
 				C652103A2BBE2A2200EA1E51 /* NewAlbumDialog.swift */,
 				C6FEA7872BD231C90075685E /* SinglePhotoMoveDialog.swift */,
+				C68F9C2D2C461D1300FAB088 /* PhotosMoveDialog.swift */,
 			);
 			path = Dialogs;
 			sourceTree = "<group>";
@@ -440,6 +448,15 @@
 				C656109A2BA04457004BB444 /* WebViewManager.swift */,
 			);
 			path = Managers;
+			sourceTree = "<group>";
+		};
+		C68F9C282C45F72600FAB088 /* ActivityView */ = {
+			isa = PBXGroup;
+			children = (
+				C68F9C292C45F73A00FAB088 /* ActivityItem.swift */,
+				C68F9C2B2C45F79000FAB088 /* ActivityView.swift */,
+			);
+			path = ActivityView;
 			sourceTree = "<group>";
 		};
 		C696537E2BC03B8F00FF6293 /* GalleryViewModels */ = {
@@ -795,6 +812,7 @@
 				C65610982BA0412C004BB444 /* BrowserViewModel.swift in Sources */,
 				C6BEA7D52B86FBDA0049CF98 /* WebView.swift in Sources */,
 				C63AC85E2BAA7F820052B471 /* NetworkUtils.swift in Sources */,
+				C68F9C2A2C45F73A00FAB088 /* ActivityItem.swift in Sources */,
 				C6A3E6F52BC3C11900C21826 /* PasswordAlertView.swift in Sources */,
 				C6A419192BFC581C00B697E2 /* StableTxt2ImgView.swift in Sources */,
 				C6E814BE2BBCE27800D8445E /* SavePhotoView.swift in Sources */,
@@ -814,6 +832,7 @@
 				C605BFDD2B96F04400E37DC9 /* BookmarkView.swift in Sources */,
 				C6AF11D02BBBF97000C5D3CC /* PasswordSettingView.swift in Sources */,
 				C66BD3242BB5C46D0074C5EF /* LocalPromptStyle.swift in Sources */,
+				C68F9C2C2C45F79000FAB088 /* ActivityView.swift in Sources */,
 				C66BD3222BB5B9800074C5EF /* EditPromptStyleView.swift in Sources */,
 				C60E09872BB0A0E800A72244 /* ScriptMessageHandler.swift in Sources */,
 				C624CE6D2BFF34B300A2AEE6 /* TextResultImageView.swift in Sources */,
@@ -829,6 +848,7 @@
 				C65610972BA0412C004BB444 /* WebViewModel+WKNavigationDelegate.swift in Sources */,
 				C60E09752BB08AA200A72244 /* InpaintingFillPicker.swift in Sources */,
 				C6EDB3FA2B8492B9003A5EAE /* StableBrowserApp.swift in Sources */,
+				C68F9C2E2C461D1300FAB088 /* PhotosMoveDialog.swift in Sources */,
 				C6FEA7882BD231C90075685E /* SinglePhotoMoveDialog.swift in Sources */,
 				C63AC8782BAB02790052B471 /* SDModelSettingView.swift in Sources */,
 				C65210402BBE387B00EA1E51 /* SwiftUIExtensions.swift in Sources */,
@@ -994,7 +1014,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.GigglySoft.StableBrowser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1039,7 +1059,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.GigglySoft.StableBrowser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

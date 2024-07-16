@@ -45,7 +45,7 @@ struct StableBrowserApp: App {
                 
                 ZStack { // Global Dialogs
                     if photoManagementService.isNewAlbumDialogVisible {
-                        Rectangle().fill(.primary.opacity(0.5))
+                        Rectangle().fill(.black.opacity(0.5))
                             .frame(maxWidth:.infinity, maxHeight: .infinity)
                             .edgesIgnoringSafeArea(.all)
                         NewAlbumDialog()
