@@ -81,14 +81,14 @@ struct GalleryView: View {
             
             ZStack {
                 if isEditAlbum {
-                    Rectangle().fill(.primary.opacity(0.5))
+                    Rectangle().fill(.black.opacity(0.5))
                         .frame(maxWidth:.infinity, maxHeight: .infinity)
                         .edgesIgnoringSafeArea(.all)
                     AlbumEditView(parent: self, isShowing: $isEditAlbum, album: $selectedAlbum)
                         .id(selectedAlbum)
                 }
                 if isShowingPasswordAlert {
-                    Rectangle().fill(.primary.opacity(0.5))
+                    Rectangle().fill(.black.opacity(0.5))
                         .frame(maxWidth:.infinity, maxHeight: .infinity)
                         .edgesIgnoringSafeArea(.all)
                     PasswordAlertView(isShowing: $isShowingPasswordAlert, album: selectedAlbum!)
@@ -104,6 +104,9 @@ struct GalleryView: View {
                     PhotoView(parent: self, currentIndex: $currentIndex, isPresented: $showImageViewer)
                 }
             }
+        }
+        .onAppear{
+            photoManagementService.updateAlbumThumbnails()
         }
     }
 
@@ -126,7 +129,7 @@ struct GalleryView: View {
                             .frame(width: 150, height: 150)
                             .clipped()
                     }
-                    else if let firstPhoto = album.photos.last, let thumbnailData = firstPhoto.getThumbnailData() {
+                    else if let firstPhoto = album.photos.first, let thumbnailData = firstPhoto.getThumbnailData() {
                         Image(uiImage: UIImage(data: thumbnailData)!)
                             .resizable()
                             .aspectRatio(contentMode: .fill)

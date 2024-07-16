@@ -1,30 +1,54 @@
 import SwiftUI
 
-enum PhotoViewMode {
-    case none
-    case title
-    case detail
-}
-
 struct PhotoView: View {
     var parent: GalleryView
     @Binding var currentIndex: Int
     @Binding var isPresented: Bool
     
     @StateObject var imageViewModel = ImageViewModel.shared
+    @StateObject var photoManagementService = PhotoManagementService.shared
     
     @State var scale: CGFloat = 1.0
     @State var lastScale: CGFloat = 1.0
     @State var offset: CGSize = .zero
     @State var lastOffset: CGSize = .zero
-    @State var doubleTapCount: Int = 0
+    @State var showSourceImage: Bool = false
     @State private var minimumScale: CGFloat = 1
     @State private var minimumScale2: CGFloat = 0.9
     
     @GestureState private var imageCloseDraggingOffset: CGSize = .zero
     @State var imageViewerOffset: CGSize = .zero
-    @State var showSourceImage: Bool = false
-    @State var viewMode: PhotoViewMode = .none
+    @State var viewMode: Bool = false
+    
+    
+    @State private var isAlertShown = false
+    @State private var alertType: AlertType = .delete
+    
+    enum AlertType {
+        case delete
+        case img2img
+    }
+    
+    @State private var showInfoView = false
+    
+    @State private var item: ActivityItem?
+    
+    @State private var doubleTapCount: Int = 0
+    
+    var strAdditionalInfo: String {
+        let additionalInfo = imageViewModel.selectedPhotos[currentIndex].metaData
+        var str = ""
+        let keys = ["prompt", "negative_prompt", "sd_model_name", "sampler_name", "clip_skip", "steps", "cfg_scale", "denoising_strength", "seed", "subseed", "subseed_strength", "width", "height", "sd_vae_name", "restore_faces"]
+        for key in keys {
+            if let value = additionalInfo[key] {
+                str += "\"\(key)\": \"\(value)\""
+                if key != keys.last {
+                    str += ", "
+                }
+            }
+        }
+        return str
+    }
     
     var body: some View {
         if isPresented {
@@ -32,7 +56,6 @@ struct PhotoView: View {
                 Rectangle()
                     .fill(Color.black.opacity(1))
                     .frame(maxWidth: .infinity, maxHeight: .infinity).edgesIgnoringSafeArea(.all)
-                
                 
                 VStack {
                     VStack {
@@ -81,6 +104,8 @@ struct PhotoView: View {
                                             .offset(offset)
                                             .offset(imageViewerOffset)
                                             .opacity(showSourceImage ? 1 : 0)
+                                            .animation(.easeInOut(duration: 0.2), value: showSourceImage)
+                                    
                                     }
                                 }
                                 .tag(index)
@@ -94,40 +119,30 @@ struct PhotoView: View {
                     doubleTapCount += 1
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         if doubleTapCount > 1 {
-                            doubleTapCount = 0
-                            if scale == 1.0 {
-                                let width = UIScreen.main.bounds.width
-                                let height = UIScreen.main.bounds.height
-                                let x = width / 2
-                                let y = height / 2
-                                
-                                withAnimation {
+                            withAnimation {
+                                if scale == 1.0 {
+                                    let width = UIScreen.main.bounds.width
+                                    let height = UIScreen.main.bounds.height
+                                    let x = width / 2
+                                    let y = height / 2
+                                    
                                     scale = 2.0
                                     lastScale = scale
-                                    let offsetX =  (x - location.x) * 2
-                                    let offsetY =  (y - location.y) * 2
+                                    let offsetX = (x - location.x) * 2
+                                    let offsetY = (y - location.y) * 2
                                     offset = CGSize(width: offsetX, height: offsetY)
                                     lastOffset = offset
-                                }
-                            } else {
-                                withAnimation {
+                                } else {
                                     scale = 1.0
                                     lastScale = 1.0
                                     offset = .zero
                                     lastOffset = .zero
                                 }
                             }
-                        }
-                        if doubleTapCount == 1 {
+                            doubleTapCount = 0
+                        } else if doubleTapCount == 1 {
                             withAnimation {
-                                if viewMode == .none {
-                                    viewMode = .title
-                                }
-                                else if viewMode == .title {
-                                    viewMode = .detail
-                                }else if viewMode == .detail {
-                                    viewMode = .none
-                                }
+                                viewMode.toggle()
                             }
                             doubleTapCount = 0
                         }
@@ -147,160 +162,162 @@ struct PhotoView: View {
                 .onDisappear {
                     isPresented = false
                 }
-                OverlayView(parent: self, viewMode: $viewMode, currentIndex: $currentIndex, showSourceImage: $showSourceImage)
-            }
-            .id(parent.showImageViewer)
-        }
-    }
-}
-
-struct OverlayView: View {
-    var parent: PhotoView
-    @StateObject var imageViewModel = ImageViewModel.shared
-    @Binding var viewMode: PhotoViewMode
-    @Binding var currentIndex: Int
-    @Binding var showSourceImage: Bool
-    
-    @State var showAlert: Bool = false
-        
-    var strAdditionalInfo: String {
-        
-        let additionalInfo = imageViewModel.selectedPhotos[currentIndex].metaData
-        var str = ""
-        let keys = ["prompt", "negative_prompt", "sd_model_name", "sampler_name", "clip_skip", "steps", "cfg_scale", "denoising_strength", "seed", "subseed", "subseed_strength", "width", "height", "sd_vae_name", "restore_faces"]
-        for key in keys {
-            // Check if the key exists in the dictionary
-            if let value = additionalInfo[key] {
-                // If the key exists, add the key and value to the string
-                str += "\"\(key)\": \"\(value)\""
-                if key != keys.last {
-                    str += ", "
-                }
-            }
-        }
-        return str
-    }
-    
-    var body: some View {
-        Group {
-            if imageViewModel.selectedPhotos.count - 1 >= currentIndex {
+                
                 VStack(spacing: 0) {
-                    HStack {
-                        if viewMode != .none {
-                            Text(imageViewModel.selectedPhotos[currentIndex].name)
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                .lineLimit(1)
-                                .foregroundColor(.white)
-                        }
-                        Spacer()
-                        Button(action: {
-                            withAnimation {
-                                parent.parent.showImageViewer = false
-                            }
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 20, height: 20)
-                                .foregroundColor(.white)
-                        }
-                    }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .contentShape(Rectangle())
-                    .background(viewMode == .none ? Color.clear : Color.gray.opacity(0.2))
-                    
-                    if viewMode == .detail {
-                        if !strAdditionalInfo.isEmpty {
-                            VStack {
-                                Text(strAdditionalInfo)
-                                    .font(.caption)
-                                    .contentShape(Rectangle())
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    if viewMode {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(imageViewModel.selectedPhotos[currentIndex].name)
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .lineLimit(1)
                                     .foregroundColor(.white)
-                                    .padding()
-                            }
-                            .contentShape(Rectangle())
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(Color.black.opacity(0.7))
-                            .onTapGesture {
-                                withAnimation {
-                                    parent.viewMode = .none
-                                }
-                            }
-                        }
-                    } else {
-                        Spacer()
-                    }
-                    
-                    if viewMode != .none {
-                        ZStack {
-                            HStack {
                                 Text(imageViewModel.selectedPhotos[currentIndex].createdAt, style: .date)
                                     .font(.subheadline)
-                                    .fontWeight(.semibold)
                                     .foregroundColor(.white)
                             }
-                            
-                            HStack {
-                                Button(action: {
-                                    showAlert = true
-                                }, label: {
-                                    Image(systemName: "trash.fill")
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .padding(2)
-                                })
-                                
-                                Spacer()
-                                
-                                if imageViewModel.selectedPhotos[currentIndex].sourceImage != nil {
-                                    Image(systemName: showSourceImage ? "eye.fill" : "eye")
-                                        .font(.headline)
-                                        .foregroundColor(.white)
-                                        .padding(2).gesture(
-                                        DragGesture(minimumDistance: 0)
-                                            .onChanged { _ in
-                                                withAnimation {
-                                                    showSourceImage = true
-                                                }
-                                            }
-                                            .onEnded { _ in
-                                                withAnimation {
-                                                    showSourceImage = false
-                                                }
-                                            }
-                                    )
+                            Spacer()
+                            Button(action: {
+                                withAnimation {
+                                    parent.showImageViewer = false
                                 }
-                            }
-                            .alert(isPresented: $showAlert) {
-                                Alert(title: Text("Delete this photo?"), message: Text("This action cannot be undone."), primaryButton: .destructive(Text("Delete")) {
-                                    DeletePhoto(photo: imageViewModel.selectedPhotos[currentIndex])
-                                }, secondaryButton: .cancel())
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 20, height: 20)
+                                    .foregroundColor(.white)
                             }
                         }
                         .padding()
-                        .frame(height: 50)
-                        .frame(maxWidth: .infinity)
+                        .background(Color.black.opacity(0.6))
+                        
+                        
+                        
+                        if showInfoView {
+                            HStack {
+                                Text(strAdditionalInfo)
+                                    .font(.caption)
+                                    .foregroundColor(.white)
+                                    .contentShape(Rectangle())
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            }
+                            .contentShape(Rectangle())
+                            .frame(maxWidth: .infinity)
+                            .background(Color.black.opacity(0.6))
+                            .allowsHitTesting(false)
+                        }else {
+                            Spacer()
+                        }
+                        
+                        HStack(spacing: 30) {
+                            Button(action: {
+                                item = ActivityItem(images: [imageViewModel.selectedPhotos[currentIndex]])
+                            }) {
+                                Image(systemName: "square.and.arrow.up")
+                                    .foregroundColor(.white)
+                                    .font(.title2)
+                            }
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                withAnimation {
+                                    showInfoView.toggle()
+                                }
+                            }) {
+                                Image(systemName: "info.circle")
+                                    .foregroundColor(.white)
+                                    .font(.title2)
+                            }
+                                                        
+                            
+                            if imageViewModel.selectedPhotos[currentIndex].sourceImage != nil {
+                                Spacer()
+                                
+                                Image(systemName: showSourceImage ? "eye.fill" : "eye")
+                                    .font(.title2)
+                                    .foregroundColor(.white)
+                                    .padding(2).gesture(
+                                        DragGesture(minimumDistance: 0)
+                                        .onChanged { _ in
+                                            withAnimation {
+                                                showSourceImage = true
+                                            }
+                                        }
+                                        .onEnded { _ in
+                                            withAnimation {
+                                                showSourceImage = false
+                                            }
+                                        }
+                                    )
+                            }
+                            
+                            Spacer()
+                            
+                            Button(action: {
+                                alertType = .img2img
+                                isAlertShown = true
+                            }) {
+                                Image(systemName: "paintbrush.pointed")
+                                    .foregroundColor(.white)
+                                    .font(.title2)
+                            }
+                                                        
+                            Spacer()
+                            
+                            Button(action: {
+                                alertType = .delete
+                                isAlertShown = true
+                            }) {
+                                Image(systemName: "trash")
+                                    .foregroundColor(.white)
+                                    .font(.title2)
+                            }
+                        }
+                        .transition(.opacity)
                         .contentShape(Rectangle())
-                        .background(viewMode == .none ? Color.clear : Color.gray.opacity(0.2))
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.black.opacity(0.6))
                     }
                 }
             }
-            
+            .id(parent.showImageViewer)
+            .alert(isPresented: $isAlertShown) {
+                if alertType == .delete {
+                    return Alert(
+                        title: Text("Delete Photo"),
+                        message: Text("Are you sure you want to delete this photo?"),
+                        primaryButton: .destructive(Text("Delete")) {
+                            deletePhoto()
+                        },
+                        secondaryButton: .cancel()
+                    )
+                } else {
+                    return Alert(
+                        title: Text("Image to Image"),
+                        message: Text("Are you sure you want to use this image for Image to Image?"),
+                        primaryButton: .default(Text("Use")) {
+                            BrowserViewModel.shared.imageFromBrowser = imageViewModel.selectedPhotos[currentIndex].image
+                            MenuService.shared.switchMenu(to: MenuService.shared.menus[1])
+                        },
+                        secondaryButton: .cancel()
+                    )
+                }
+            }
+            .activitySheet($item)
         }
     }
     
-    func DeletePhoto(photo: OpenPhoto) {
-        let deleteImage = imageViewModel.selectedPhotos[currentIndex]
-        withAnimation {
-            parent.parent.showImageViewer = false
-            
+    private func deletePhoto() {
+        withAnimation{
+            parent.showImageViewer = false
         }
+        let photoToDelete = imageViewModel.selectedPhotos[currentIndex]
         imageViewModel.selectedPhotos.remove(at: currentIndex)
         if let album = imageViewModel.selectedAlbum {
-            PhotoManagementService.shared.deletePhotoFromAlbum(Album: album, id: deleteImage.id)
-        }        
+            photoManagementService.deletePhotoFromAlbum(Album: album, id: photoToDelete.id)
+        }
     }
 }

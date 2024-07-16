@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct NewAlbumDialog: View {
-    @State private var newAlbumName = ""    
+    @State private var newAlbumName = ""
     @State private var isSecretNewAlbum: Bool = false
     @State private var password = ""
     @State private var photoManagementService = PhotoManagementService.shared
@@ -11,6 +11,7 @@ struct NewAlbumDialog: View {
     enum AlertType {
         case emptyName
         case emptyPassword
+        case duplicateName
     }
     
     enum FocusableField {
@@ -74,7 +75,6 @@ struct NewAlbumDialog: View {
                                         .background(Color(.systemGray6))
                                         .cornerRadius(8)
                                         .onChange(of: password) { oldValue, newValue in
-                                            // 스페이스를 제거하여 비밀번호를 업데이트합니다.
                                             password = newValue.replacingOccurrences(of: " ", with: "")
                                         }
                                         .frame(height: 40)
@@ -84,14 +84,13 @@ struct NewAlbumDialog: View {
                                         .background(Color(.systemGray6))
                                         .cornerRadius(8)
                                         .onChange(of: password) { oldValue, newValue in
-                                            // 스페이스를 제거하여 비밀번호를 업데이트합니다.
                                             password = newValue.replacingOccurrences(of: " ", with: "")
                                         }
                                         .frame(height: 40)
                                         .focused($focusField, equals: .password)
                                         .onAppear {
                                             focusField = .password
-                                        }                                        
+                                        }
                                 }
                                 Button(action: {
                                     showPassword.toggle()
@@ -154,6 +153,8 @@ struct NewAlbumDialog: View {
                 return Alert(title: Text("Empty Name"), message: Text("Please enter a name for your new album"), dismissButton: .default(Text("OK")))
             case .emptyPassword:
                 return Alert(title: Text("Empty Password"), message: Text("Please enter a password for your new album"), dismissButton: .default(Text("OK")))
+            case .duplicateName:
+                return Alert(title: Text("Duplicate Name"), message: Text("An album with this name already exists. Please choose a different name."), dismissButton: .default(Text("OK")))
             }
         }
     }
@@ -171,10 +172,14 @@ struct NewAlbumDialog: View {
             return
         }
         
-        let newAlbum = Album()
-        newAlbum.name = newAlbumName
+        // Check for duplicate album name
+        if photoManagementService.albums.contains(where: { $0.name.lowercased() == newAlbumName.lowercased() }) {
+            isAlertShown = true
+            alertType = .duplicateName
+            return
+        }
+
         photoManagementService.addAlbum(name: newAlbumName, isSecret: isSecretNewAlbum, password: password)
         photoManagementService.hideNewAlbumDialog()
     }
-    
 }

@@ -1,4 +1,3 @@
-//AlbumEditView
 import Foundation
 import SwiftUI
 import RealmSwift
@@ -21,6 +20,7 @@ struct AlbumEditView: View {
         case emptyName
         case askDeleteAlbum
         case askDeletePassword
+        case duplicateName
     }
     
     var body: some View {
@@ -229,7 +229,7 @@ struct AlbumEditView: View {
                     return Alert(title: Text("Delete Album"), message: Text("Are you sure you want to delete this album?"), primaryButton: .destructive(Text("Delete"), action: {
                         DeleteAlbum()
                     }), secondaryButton: .cancel())
-                case .askDeletePassword:                
+                case .askDeletePassword:
                     return Alert(title: Text("Delete Password"), message: Text("Are you sure you want to delete the password for this album?"), primaryButton: .destructive(Text("Delete"), action: {
                         photoManagementService.updateAlbum(album: album, name: albumName, isSecret: false, password: nil)
                         withAnimation {
@@ -237,6 +237,8 @@ struct AlbumEditView: View {
                             isShowing = false
                         }
                     }), secondaryButton: .cancel())
+                case .duplicateName:
+                    return Alert(title: Text("Duplicate Name"), message: Text("An album with this name already exists. Please choose a different name."), dismissButton: .default(Text("OK")))
                 }
             }
         }
@@ -249,6 +251,14 @@ struct AlbumEditView: View {
                 alertType = .emptyName
                 return
             }
+            
+            // Check for duplicate album name
+            if photoManagementService.albums.contains(where: { $0.id != album.id && $0.name.lowercased() == albumName.lowercased() }) {
+                isAlertShown = true
+                alertType = .duplicateName
+                return
+            }
+            
             if isSecuredAlbum {
                 if isSecret {
                     if password.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -263,7 +273,7 @@ struct AlbumEditView: View {
                 } else {
                     photoManagementService.updateAlbum(album: album, name: albumName, isSecret: true, password: nil)
                 }
-            }else {
+            } else {
                 if isSecret {
                     if password.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                         photoManagementService.updateAlbum(album: album, name: albumName, isSecret: false, password: nil)
@@ -298,8 +308,8 @@ struct AlbumEditView: View {
                             isShowing = false
                         }
                     }
-                }    
-            }            
+                }
+            }
         }
     }
 }
