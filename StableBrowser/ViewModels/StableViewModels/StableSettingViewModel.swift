@@ -29,6 +29,17 @@ class StableSettingViewModel : ObservableObject {
     @Published var denoisingStrength: Double = 0.5
     @Published var seed: Int = -1
     @Published var restoreFaces: Bool = false
+    
+    // Img2Img properties
+    @Published var baseImage: UIImage = UIImage() {
+        didSet {
+            self.width = self.baseImage.size.width
+            self.height = self.baseImage.size.height
+        }
+    }
+    @Published var maskImage: UIImage?
+    @Published var width: CGFloat = 0
+    @Published var height: CGFloat = 0
 
     // Inpaint properties
     @Published var isInpaintMode: Bool = false
@@ -65,6 +76,10 @@ class StableSettingViewModel : ObservableObject {
     @Published var txt2imgHrResizeX: Int = 0
     @Published var txt2imgHrResizeY: Int = 0
 
+    // ResultImages
+    @Published var txt2imgResultImages: [ResultImage] = []
+    @Published var img2imgResultImages: [ResultImage] = []
+
     var ip: String?
     var port: String?
 
@@ -76,7 +91,6 @@ class StableSettingViewModel : ObservableObject {
             return ""
         }
     }
-
     
     public func tryAutoConnectToServer() {
         if let ipAddress = ip, let port = port {
@@ -122,6 +136,16 @@ class StableSettingViewModel : ObservableObject {
             await MainActor.run {
                 self.isConnected = false
             }
+        }
+    }    
+    
+    var isGenerating: Bool {
+        img2imgState == .inProgress || txt2imgState == .inProgress
+    }
+    
+    func updateProgress(_ newProgress: Float) {
+        DispatchQueue.main.async {
+            self.progress = newProgress
         }
     }
 

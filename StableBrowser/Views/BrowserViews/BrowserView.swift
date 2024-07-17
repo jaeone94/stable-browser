@@ -438,14 +438,14 @@ struct BrowserView: View {
     }
     
     func showSDView() {
-        browserViewModel.imageFromBrowser = nil
+        importBaseImage(UIImage())
         browserViewModel.imageId = nil
         browserViewModel.imageSrc = nil
         img_tag = nil
         if !browserViewModel.currentUrl.isEmpty {
             browserViewModel.selectedWKWebView.takeSnapshot(with: nil) { image, error in
                 if let image = image {
-                    browserViewModel.imageFromBrowser = image
+                    importBaseImage(image)
                     MenuService.shared.switchMenu(to: MenuService.shared.menus[1])
                 }
             }
@@ -458,7 +458,7 @@ struct BrowserView: View {
     
     func showSDView(with image: UIImage?) {
         if let baseImage = image {
-            browserViewModel.imageFromBrowser = baseImage
+            importBaseImage(baseImage)
         }
         MenuService.shared.switchMenu(to: MenuService.shared.menus[1])
     }
@@ -538,9 +538,9 @@ struct BrowserView: View {
             }
             else {
                 checkImageUrl(imageSrc) { image in
-                    if image != nil {
+                    if let img = image {
                         DispatchQueue.main.async{
-                            BrowserViewModel.shared.imageFromBrowser = image
+                            importBaseImage(img)
                             OverlayService.shared.showOverlaySpinner()
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                                 showSDView(with: nil)
@@ -551,6 +551,11 @@ struct BrowserView: View {
                 }
             }
         }
+    }
+    
+    func importBaseImage(_ img: UIImage) {
+        StableSettingViewModel.shared.baseImage = img
+        StableSettingViewModel.shared.maskImage = nil
     }
     
     func checkImageUrl(_ urlString: String, completion: @escaping (UIImage?) -> Void) {

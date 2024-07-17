@@ -6,8 +6,8 @@ struct StableImg2ImgView: View {
     @StateObject var browserViewModel = BrowserViewModel.shared
     
     // For resizing image
-    @State internal var width: CGFloat = 720
-    @State internal var height: CGFloat = 1280
+    @State internal var width: CGFloat = StableSettingViewModel.shared.width
+    @State internal var height: CGFloat = StableSettingViewModel.shared.height
     @State private var maxImageSize: CGFloat = 2400
     
     // Alert
@@ -15,16 +15,28 @@ struct StableImg2ImgView: View {
     @State internal var alertType : AlertType = .resize
     
     // Image
-    @State internal var baseImage: UIImage
-    @State internal var maskImage: UIImage?
-    @State internal var resultImages: [ResultImage] = []
+    @State internal var baseImage: UIImage = StableSettingViewModel.shared.baseImage {
+        didSet {
+            StableSettingViewModel.shared.baseImage = self.baseImage
+        }
+    }
+    @State internal var maskImage: UIImage? = StableSettingViewModel.shared.maskImage {
+        didSet {
+            StableSettingViewModel.shared.maskImage = self.maskImage
+        }
+    }
+    @State internal var resultImages: [ResultImage] = StableSettingViewModel.shared.img2imgResultImages {
+        didSet {
+            StableSettingViewModel.shared.img2imgResultImages = self.resultImages
+        }
+    }
     
     @State internal var selectedIndex = 0
     @State internal var canInject: Bool = false
 
     // For Generate Image
     @State private var isInpaintMode: Bool = true
-    @State internal var resizeScale: Double = 0.5    
+    @State internal var resizeScale: Double = 1
     @State internal var prompt: String = ""
     @State internal var negativePrompt: String = ""
     @State private var batchCount: Int = 1
@@ -51,17 +63,6 @@ struct StableImg2ImgView: View {
         case noMaskImage // Inpaint mode without mask image
     }
     
-    init(baseImage: UIImage?) {
-        if let baseImage {
-            self.width = baseImage.size.width
-            self.height = baseImage.size.height
-            self.baseImage = baseImage
-        } else {
-            self.width = 0
-            self.height = 0
-            self.baseImage = UIImage()
-        }
-    }
     
     func importBaseImage(baseImage: UIImage) {
         self.width = baseImage.size.width
@@ -83,7 +84,7 @@ struct StableImg2ImgView: View {
         ZStack {
             NavigationView {
                 Form {
-                    BaseImageSection(parent: self, baseImage: $baseImage, resizeScale: $resizeScale, width: $width, height: $height, isInpaintMode: $isInpaintMode, maskImage: $maskImage, uploadImageSheetVisible: $uploadImagePopupVisible)
+                    BaseImageSection(parent: self, baseImage: $baseImage, maskImage: $maskImage, resizeScale: $resizeScale, width: $width, height: $height, isInpaintMode: $isInpaintMode, uploadImageSheetVisible: $uploadImagePopupVisible)
                     
                     if isConnected {
                         Section(isProgressing ? "Generating..." : "Img2Img") {
@@ -95,8 +96,6 @@ struct StableImg2ImgView: View {
                                         Task {
                                             await api.interrupt()
                                             await api.skip()
-                                            await api.interrupt()
-                                            await api.skip()   
                                         }
                                     }
                                 }.font(.title3).foregroundColor(.red)
@@ -148,17 +147,6 @@ struct StableImg2ImgView: View {
                 }
                 .navigationBarTitle("IMAGE TO IMAGE", displayMode: .inline)
                 .navigationBarItems(
-                    // Back button
-                    leading:Button(action: {
-                        if browserViewModel.imageFromBrowser != nil {
-                            withAnimation {
-                                MenuService.shared.switchMenu(to: MenuService.shared.menus[0])
-                            }
-                        }
-                    }) {
-                        Text("Back")
-                        .opacity(browserViewModel.imageFromBrowser != nil ? 1 : 0)
-                    },
                     trailing: NavigationLink(destination: StableSettingsView()) {
                         Image(systemName: "gear")
                     }
@@ -282,7 +270,7 @@ struct StableImg2ImgView: View {
         if let api = viewModel.webUIApi {            
             Task {           
                 let softInpaintingArgs: [String: Any] = [
-                    "Soft inpainting": viewModel.isInpaintMode ? viewModel.softInpainting : false,
+                    "Soft inpainting": viewModel.softInpainting,
                     "Schedule bias": viewModel.scheduleBias,
                     "Preservation strength": viewModel.preservationStrength,
                     "Transition contrast boost": viewModel.transitionContrastBoost,
@@ -325,7 +313,7 @@ struct StableImg2ImgView: View {
                    ]
                    , sendImages: true
                    , saveImages: false
-                    , alwaysonScripts: alwaysonScripts
+                   , alwaysonScripts: viewModel.isInpaintMode && viewModel.softInpainting ? alwaysonScripts : [:]
                 )
                 
                 timer?.invalidate()
@@ -395,6 +383,7 @@ struct StableImg2ImgView: View {
             }
         }
     }
+    
     
     func preparePrompts(selectedPromptStyles: [String], completion: @escaping (String, String) -> Void) {
         var promptTemp = self.prompt

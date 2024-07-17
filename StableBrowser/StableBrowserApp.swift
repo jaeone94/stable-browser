@@ -27,7 +27,7 @@ struct StableBrowserApp: App {
                     BrowserView()
                         .transition(.opacity)
                 case "Img2Img":
-                    StableImg2ImgView(baseImage: BrowserViewModel.shared.imageFromBrowser)
+                    StableImg2ImgView()
                 case "Txt2Img":
                     StableTxt2ImgView()
                 case "gallery":

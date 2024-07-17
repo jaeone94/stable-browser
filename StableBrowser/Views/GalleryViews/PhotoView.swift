@@ -163,7 +163,7 @@ struct PhotoView: View {
                     isPresented = false
                 }
             }
-            .overlay {                
+            .overlay {
                 VStack(spacing: 0) {
                     if viewMode {
                         HStack {
@@ -300,7 +300,7 @@ struct PhotoView: View {
                         title: Text("Image to Image"),
                         message: Text("Are you sure you want to use this image for Image to Image?"),
                         primaryButton: .default(Text("Use")) {
-                            BrowserViewModel.shared.imageFromBrowser = imageViewModel.selectedPhotos[currentIndex].image
+                            importBaseImage(imageViewModel.selectedPhotos[currentIndex].image)                            
                             MenuService.shared.switchMenu(to: MenuService.shared.menus[1])
                         },
                         secondaryButton: .cancel()
@@ -310,6 +310,12 @@ struct PhotoView: View {
             .activitySheet($item)
         }
     }
+    
+    func importBaseImage(_ img: UIImage) {
+        StableSettingViewModel.shared.baseImage = img
+        StableSettingViewModel.shared.maskImage = nil
+    }
+    
     
     private func deletePhoto() {
         withAnimation{

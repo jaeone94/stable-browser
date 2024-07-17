@@ -14,7 +14,11 @@ struct StableTxt2ImgView: View {
     // txt2img specific options
     
     
-    @State internal var resultImages: [ResultImage] = []
+    @State internal var resultImages: [ResultImage] = StableSettingViewModel.shared.txt2imgResultImages {
+        didSet {
+            StableSettingViewModel.shared.txt2imgResultImages = self.resultImages
+        }
+    }
     @State internal var selectedIndex = 0
     @State internal var isStopping = false
     
@@ -30,8 +34,6 @@ struct StableTxt2ImgView: View {
                                     Task {
                                         await api.interrupt()
                                         await api.skip()
-                                        await api.interrupt()
-                                        await api.skip()                                        
                                     }
                                 }
                             }.font(.title3).foregroundColor(.red)
