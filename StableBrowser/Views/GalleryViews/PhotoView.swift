@@ -113,7 +113,7 @@ struct PhotoView: View {
                         }
                         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                     }
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+//                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
                 .onTapGesture { location in
                     doubleTapCount += 1
@@ -162,7 +162,8 @@ struct PhotoView: View {
                 .onDisappear {
                     isPresented = false
                 }
-                
+            }
+            .overlay {                
                 VStack(spacing: 0) {
                     if viewMode {
                         HStack {
