@@ -29,6 +29,25 @@ class StableSettingViewModel : ObservableObject {
     @Published var denoisingStrength: Double = 0.5
     @Published var seed: Int = -1
     @Published var restoreFaces: Bool = false
+    
+    // Img2Img properties
+    @Published var baseImage: UIImage = UIImage() {
+        didSet {
+            self.width = self.baseImage.size.width
+            self.height = self.baseImage.size.height
+        }
+    }
+    
+    @Published var maskImage: UIImage?
+    @Published var baseImageFromResult: UIImage = UIImage() { // Separate properties for changing baseImage and maskImage simultaneously
+        didSet {
+            self.baseImage = self.baseImageFromResult
+            self.maskImage = nil
+        }
+    }
+    
+    @Published var width: CGFloat = 0
+    @Published var height: CGFloat = 0
 
     // Inpaint properties
     @Published var isInpaintMode: Bool = false
@@ -37,6 +56,11 @@ class StableSettingViewModel : ObservableObject {
     @Published var maskInvert: Int = 0 // 0: inpaint masked, 1: inpaint not masked
     @Published var inpaintFullRes: Int = 0 // 0: whole picture, 1: only masked
     @Published var inpaintFullResPadding: Int = 32 // only masked padding pixels    
+    
+    @Published var softInpainting: Bool = false
+    @Published var scheduleBias: Double = 1.0
+    @Published var preservationStrength: Double = 0.5
+    @Published var transitionContrastBoost: Double = 4.0
 
     // maximum image size (width or height, whichever is larger)
     @Published var maxImageSize: Int = -1
@@ -60,6 +84,10 @@ class StableSettingViewModel : ObservableObject {
     @Published var txt2imgHrResizeX: Int = 0
     @Published var txt2imgHrResizeY: Int = 0
 
+    // ResultImages
+    @Published var txt2imgResultImages: [ResultImage] = []
+    @Published var img2imgResultImages: [ResultImage] = []
+
     var ip: String?
     var port: String?
 
@@ -71,12 +99,12 @@ class StableSettingViewModel : ObservableObject {
             return ""
         }
     }
-
     
     public func tryAutoConnectToServer() {
         if let ipAddress = ip, let port = port {
             let (cleanAddress, useHttps, cleanPort) = StringUtils.processAddress(ipAddress, port: port)
-            let api = WebUIApi(host: cleanAddress, port: cleanPort, useHttps: useHttps)
+            let api = WebUIApi.shared
+            api.setConnectionProperties(host: cleanAddress, port: cleanPort, useHttps: useHttps)
             
             Task {
                 await connectToServer(api: api)
@@ -118,8 +146,8 @@ class StableSettingViewModel : ObservableObject {
                 self.isConnected = false
             }
         }
-    }
-
+    }    
+  
     public func saveCurrentSettings() {
         if isConnected ?? false {
             saveSampler()
@@ -140,6 +168,7 @@ class StableSettingViewModel : ObservableObject {
             saveLocalPromptStyles()
             saveIsInpaintMode()
             saveTxt2ImgSettings()
+            saveSoftInpaintingSettings()
         }
     }
 
@@ -163,6 +192,7 @@ class StableSettingViewModel : ObservableObject {
         loadLocalPromptStyles()
         loadIsInpaintMode()
         loadTxt2ImgSettings()
+        loadSoftInpaintingSettings()
     }
     
     private func saveTxt2ImgSettings() {
@@ -773,6 +803,42 @@ class StableSettingViewModel : ObservableObject {
             self.isInpaintMode = setting.isInpaintMode
         } else {
             self.isInpaintMode = false
+        }
+    }
+    
+    func saveSoftInpaintingSettings() {
+        let realm = try! Realm()
+        try! realm.write {
+            if let setting = realm.objects(StableSettings.self).first {
+                setting.softInpainting = self.softInpainting
+                setting.scheduleBias = self.scheduleBias
+                setting.preservationStrength = self.preservationStrength
+                setting.transitionContrastBoost = self.transitionContrastBoost
+            } else {
+                let newSetting = StableSettings()
+                newSetting.softInpainting = self.softInpainting
+                newSetting.scheduleBias = self.scheduleBias
+                newSetting.preservationStrength = self.preservationStrength
+                newSetting.transitionContrastBoost = self.transitionContrastBoost
+                realm.add(newSetting)
+            }
+        }
+    }
+
+    func loadSoftInpaintingSettings() {
+        let realm = try! Realm()
+        if let setting = realm.objects(StableSettings.self).first {
+            if setting.transitionContrastBoost == 0 {
+                self.softInpainting = false
+                self.scheduleBias = 1
+                self.preservationStrength = 0.5
+                self.transitionContrastBoost = 4
+            }else {
+                self.softInpainting = setting.softInpainting
+                self.scheduleBias = setting.scheduleBias
+                self.preservationStrength = setting.preservationStrength
+                self.transitionContrastBoost = setting.transitionContrastBoost
+            }
         }
     }
 }

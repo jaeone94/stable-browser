@@ -5,11 +5,14 @@ struct SavePhotoView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var title: String = "GeneratedPicture_\(formattedCurrentDateTime())"
     @State private var selectedAlbumIndex: Int = 0
-    @State private var albums: [Album] = PhotoManagementService.shared.albums
+    @State private var albums: [Album] = []
     @State private var toggleReDraw: Bool = false
     @State private var showingAlert = false
     @State private var alertType: AlertType = .saved
     @State private var isSaveWithSourceImage = false
+    
+    @StateObject private var imageViewModel = ImageViewModel.shared
+    @StateObject private var photoManagementService = PhotoManagementService.shared
     
     enum AlertType {
         case saved, failed
@@ -18,6 +21,7 @@ struct SavePhotoView: View {
     var image: UIImage
     var sourceImage: UIImage
     var additionalInfo: [String: Any]
+    
     var strAdditionalInfo: String {
         if additionalInfo.isEmpty {
             return ""
@@ -79,17 +83,17 @@ struct SavePhotoView: View {
                                     .foregroundColor(.secondary)
                                 Spacer()
                             }.padding(.vertical, 7)
-                            Picker("Select a Album", selection: $selectedAlbumIndex) {
+                            Picker("Select an Album", selection: $selectedAlbumIndex) {
                                 ForEach(0..<albums.count, id: \.self) { index in
                                     Text(self.albums[index].name).tag(index)
-                                        .multilineTextAlignment(.trailing)
-                                }
+                                }                                
                                 Text("Create new Album").tag(albums.count)
+                            
                             }
                             .frame(maxWidth: .infinity)
                             .background(Color(UIColor.systemBackground))
                             .cornerRadius(3)
-                            .pickerStyle(MenuPickerStyle())                            
+                            .pickerStyle(MenuPickerStyle())
                         }
                     }.frame(height: 150)
                     
@@ -182,6 +186,25 @@ struct SavePhotoView: View {
         .alert(isPresented: $showingAlert) {
             return Alert(title: Text("Failed"), message: Text("Failed to save your photo"), dismissButton: .default(Text("OK")))
         }
+        .onAppear {
+            loadAlbums()
+        }
+    }
+    
+    private func loadAlbums() {
+        albums = photoManagementService.albums
+        
+        if albums.isEmpty {
+            selectedAlbumIndex = 0
+            return
+        }
+        
+        if let lastSavedAlbumId = imageViewModel.lastSavedAlbumId,
+           let index = albums.firstIndex(where: { $0.id == lastSavedAlbumId }) {
+            selectedAlbumIndex = index
+        } else {
+            selectedAlbumIndex = 0
+        }
     }
     
     @MainActor private func savePhotoWithCreatingAlbum() {
@@ -190,13 +213,12 @@ struct SavePhotoView: View {
             
             var sourcePhotoData: Data? = nil
             if isSaveWithSourceImage {
-                if let originalSourcePhotoData = sourceImage.pngData() {
-                    sourcePhotoData = originalSourcePhotoData
-                }
+                sourcePhotoData = sourceImage.pngData()
             }
             
             let securePhoto = SecurePhoto(name: title, photoData: originalPhotoData, thumbnailData: thumbnailPhotoData, metadata: additionalInfo, sourcePhotoData: sourcePhotoData)
-            PhotoManagementService.shared.addPhotoToNewAlbum(photo: securePhoto)
+            photoManagementService.addPhotoToNewAlbum(photo: securePhoto)
+                                
             presentationMode.wrappedValue.dismiss()
         }
     }
@@ -246,9 +268,12 @@ struct SavePhotoView: View {
         }
         
         let securePhoto = SecurePhoto(name: title, photoData: finalPhotoData, thumbnailData: thumbnailPhotoData, metadata: additionalInfo, sourcePhotoData: sourcePhotoData)
-        let album = PhotoManagementService.shared.albums[selectedAlbumIndex]
-        
-        PhotoManagementService.shared.addPhotoToAlbum(album: album, photo: securePhoto) { success in
+                let album = albums[selectedAlbumIndex]
+                
+        photoManagementService.addPhotoToAlbum(album: album, photo: securePhoto) { success in
+            if success {
+                imageViewModel.updateLastSavedAlbum(album)
+            }
             completion(success)
         }
     }

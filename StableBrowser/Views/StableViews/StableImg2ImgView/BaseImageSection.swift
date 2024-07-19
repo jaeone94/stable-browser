@@ -2,12 +2,23 @@ import SwiftUI
 
 struct BaseImageSection: View {
     var parent: StableImg2ImgView
-    @Binding var baseImage: UIImage
+    @Binding var baseImage: UIImage {
+        didSet {
+            StableSettingViewModel.shared.baseImage = self.baseImage
+        }
+    }
+    @Binding var maskImage: UIImage? {
+        didSet {
+            StableSettingViewModel.shared.maskImage = self.maskImage
+        }
+    }
+    
+    
     @Binding var resizeScale: Double
     @Binding var width: CGFloat
     @Binding var height: CGFloat
     @Binding var isInpaintMode: Bool
-    @Binding var maskImage: UIImage?
+    
     
     @State private var alertVisible = false
 
@@ -99,7 +110,8 @@ struct BaseImageSection: View {
             Alert(title: Text("Clear Source Image"), message: Text("Are you sure you want to clear the source image?"), primaryButton: .destructive(Text("Clear")) {
                 BrowserViewModel.shared.imageId = nil
                 BrowserViewModel.shared.imageSrc = nil
-                BrowserViewModel.shared.imageFromBrowser = nil
+                parent.baseImage = UIImage()
+                parent.maskImage = nil
                 withAnimation {
                     baseImage = UIImage()
                     width = 0

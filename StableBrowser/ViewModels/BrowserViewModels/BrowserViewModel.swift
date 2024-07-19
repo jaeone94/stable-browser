@@ -15,7 +15,6 @@ class BrowserViewModel: ObservableObject {
     @Published var selectedWKWebView: WKWebView = WKWebView()
     @Published var tabSnapshotChanged = false
     
-    @Published var imageFromBrowser: UIImage?
     @Published var imageId: String?
     @Published var imageSrc: String?
     @Published var imageForInject: UIImage?

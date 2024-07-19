@@ -6,8 +6,8 @@ struct StableImg2ImgView: View {
     @StateObject var browserViewModel = BrowserViewModel.shared
     
     // For resizing image
-    @State internal var width: CGFloat = 720
-    @State internal var height: CGFloat = 1280
+    @State internal var width: CGFloat = StableSettingViewModel.shared.width
+    @State internal var height: CGFloat = StableSettingViewModel.shared.height
     @State private var maxImageSize: CGFloat = 2400
     
     // Alert
@@ -15,25 +15,32 @@ struct StableImg2ImgView: View {
     @State internal var alertType : AlertType = .resize
     
     // Image
-    @State internal var baseImage: UIImage
-    @State internal var maskImage: UIImage?
-    @State internal var resultImages: [ResultImage] = []
+    @State internal var baseImage: UIImage = StableSettingViewModel.shared.baseImage {
+        didSet {
+            StableSettingViewModel.shared.baseImage = self.baseImage
+        }
+    }
+    @State internal var maskImage: UIImage? = StableSettingViewModel.shared.maskImage {
+        didSet {
+            StableSettingViewModel.shared.maskImage = self.maskImage
+        }
+    }
+    @State internal var resultImages: [ResultImage] = StableSettingViewModel.shared.img2imgResultImages {
+        didSet {
+            StableSettingViewModel.shared.img2imgResultImages = self.resultImages
+        }
+    }
     
     @State internal var selectedIndex = 0
     @State internal var canInject: Bool = false
 
     // For Generate Image
     @State private var isInpaintMode: Bool = true
-    @State internal var resizeScale: Double = 0.5    
+    @State internal var resizeScale: Double = 1
     @State internal var prompt: String = ""
     @State internal var negativePrompt: String = ""
     @State private var batchCount: Int = 1
     @State private var localStyles: [LocalPromptStyle]?
-
-    // For progress bar
-    @State private var timer: Timer?
-    @State internal var isProgressing: Bool = false
-    @State internal var progress: Float = 0.0
     
     @State private var isConnected = false
     
@@ -42,8 +49,6 @@ struct StableImg2ImgView: View {
     @State private var resizeTo8x: Bool = true
     
     @State internal var uploadImagePopupVisible: Bool = false
-    
-    @State internal var isStopping = false
 
     // Alert type
     enum AlertType {
@@ -51,17 +56,6 @@ struct StableImg2ImgView: View {
         case noMaskImage // Inpaint mode without mask image
     }
     
-    init(baseImage: UIImage?) {
-        if let baseImage {
-            self.width = baseImage.size.width
-            self.height = baseImage.size.height
-            self.baseImage = baseImage
-        } else {
-            self.width = 0
-            self.height = 0
-            self.baseImage = UIImage()
-        }
-    }
     
     func importBaseImage(baseImage: UIImage) {
         self.width = baseImage.size.width
@@ -83,50 +77,19 @@ struct StableImg2ImgView: View {
         ZStack {
             NavigationView {
                 Form {
-                    BaseImageSection(parent: self, baseImage: $baseImage, resizeScale: $resizeScale, width: $width, height: $height, isInpaintMode: $isInpaintMode, maskImage: $maskImage, uploadImageSheetVisible: $uploadImagePopupVisible)
+                    BaseImageSection(parent: self, baseImage: $baseImage, maskImage: $maskImage, resizeScale: $resizeScale, width: $width, height: $height, isInpaintMode: $isInpaintMode, uploadImageSheetVisible: $uploadImagePopupVisible)
                     
                     if isConnected {
-                        Section(isProgressing ? "Generating..." : "Img2Img") {
-                            if isProgressing {
-                                // stop button
-                                Button(isStopping ? "Stopping a task..." : "Stop generating") {
-                                    isStopping = true
-                                    if let api = viewModel.webUIApi {
-                                        Task {
-                                            await api.interrupt()
-                                            await api.skip()
-                                            await api.interrupt()
-                                            await api.skip()   
-                                        }
-                                    }
-                                }.font(.title3).foregroundColor(.red)
-                                HStack {
-                                    ProgressView(value: progress, total: 1)
-                                        .progressViewStyle(LinearProgressViewStyle())
-                                        .padding(.vertical, 10)
-                                    Spacer()
-                                    // Progress percentage
-                                    Text("\(Int(progress * 100))%")
-                                        .font(.title3)
-                                        .padding(.trailing, 10)
-                                }
-                            }else {
-                                GenerateImageButton(batchCount: $batchCount, doGenerate: doImg2Img)
-                                // Batch Count
-                                Stepper(value: $batchCount, in: 1...10) {
-                                    Text("Batch Count: \(batchCount)")
-                                }
-                            }
-                        }
-                        
-                        if resultImages.count > 0 && !isProgressing {
-                            ResultSection(parent: self, resultImages: resultImages, selectedIndex: $selectedIndex)
-                        }
-                        
-                        
-                        
                         Img2ImgModeSection(isInpaintMode: $isInpaintMode, viewModel: viewModel)
                         GenerateOptionsSection(parent: self, viewModel: viewModel)
+                        
+                        Section("IMG2IMG GENERATE") {
+                            GenerateImageButton(batchCount: $batchCount, doGenerate: doImg2Img)
+                            // Batch Count
+                            Stepper(value: $batchCount, in: 1...10) {
+                                Text("Batch Size: \(batchCount)")
+                            }
+                        }
                     }else {
                         // Server connection required
                         Section(header: Text("Server connection required")) {
@@ -148,17 +111,6 @@ struct StableImg2ImgView: View {
                 }
                 .navigationBarTitle("IMAGE TO IMAGE", displayMode: .inline)
                 .navigationBarItems(
-                    // Back button
-                    leading:Button(action: {
-                        if browserViewModel.imageFromBrowser != nil {
-                            withAnimation {
-                                MenuService.shared.switchMenu(to: MenuService.shared.menus[0])
-                            }
-                        }
-                    }) {
-                        Text("Back")
-                        .opacity(browserViewModel.imageFromBrowser != nil ? 1 : 0)
-                    },
                     trailing: NavigationLink(destination: StableSettingsView()) {
                         Image(systemName: "gear")
                     }
@@ -211,7 +163,15 @@ struct StableImg2ImgView: View {
             .transition(.move(edge: .bottom).combined(with: .opacity))
             .animation(.easeInOut, value: uploadImagePopupVisible)
         }
+        .onChange(of: viewModel.baseImageFromResult) { oldValue, newValue in
+            if newValue.size.width != 0 {
+                self.importBaseImage(baseImage: newValue)
+                self.maskImage = nil
+                self.resizeScale = 1
+            }
+        }
     }
+        
 
     func InjectImage() {
         OverlayService.shared.showOverlaySpinner()
@@ -243,23 +203,6 @@ struct StableImg2ImgView: View {
             }
         }
 
-        // Start Timer
-        if let api = viewModel.webUIApi {
-            withAnimation{
-                self.isProgressing = true
-            }
-            timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { timer in
-                Task {
-                    if let progress = await api.getProgress() {
-                        DispatchQueue.main.async {
-                            withAnimation{
-                                self.progress = Float(progress.progress)
-                            }
-                        }
-                    }
-                }
-            }
-        }
         selectedIndex = 0
         Task { await generateImage() }
                 
@@ -278,106 +221,55 @@ struct StableImg2ImgView: View {
                     continuation.resume(returning: (prompt, negativePrompt))
                 }
             }
+               
+        let softInpaintingArgs: [String: Any] = [
+            "Soft inpainting": viewModel.softInpainting,
+            "Schedule bias": viewModel.scheduleBias,
+            "Preservation strength": viewModel.preservationStrength,
+            "Transition contrast boost": viewModel.transitionContrastBoost,
+            "Mask influence": 0,
+            "Difference threshold": 0.5,
+            "Difference contrast": 2,
+        ]
 
-        if let api = viewModel.webUIApi {            
-            Task {
-                let webUIApiResult = await api.img2img(
-                    mode: isInpaintMode ? .inpaint : .normal
-                   , initImages: [baseImage]
-                   , mask: maskImage
-                   , maskBlur: viewModel.maskBlur
-                   , inpaintingFill: viewModel.inpaintingFill
-                   , inpaintFullRes: viewModel.inpaintFullRes != 0
-                   , inpaintFullResPadding: viewModel.inpaintFullResPadding
-                   , inpaintingMaskInvert: viewModel.maskInvert
-                   , resizeMode: viewModel.resizeMode
-                   , denoisingStrength: viewModel.denoisingStrength
-                   , prompt: promptTemp
-                   , negativePrompt: negativePromptTemp
-                   , styles: []
-                   , seed: viewModel.seed
-                   , samplerName: viewModel.selectedSampler
-                   , batchSize: batchCount
-                   , steps: viewModel.steps
-                   , cfgScale: viewModel.cfgScale
-                   , width: intWidth
-                   , height: intHeight
-                   , overrideSettings: [
-                    "sd_model_checkpoint": viewModel.selectedSDModel,
-                    "CLIP_stop_at_last_layers": viewModel.clipSkip,
-                    "sd_vae": viewModel.selectedSdVae
-                   ]
-                   , sendImages: true
-                   , saveImages: false
-                   , alwaysonScripts: [:]
-                )
+        let alwaysonScripts: [String: [String: Any]] = [
+            "soft inpainting": [
+                "args": [softInpaintingArgs]
+            ]
+        ]
                 
-                timer?.invalidate()
-                timer = nil
-                                
-                let result = webUIApiResult
-                if let result = result {
-                    isStopping = false
-                    var resultImages: [ResultImage] = []
-                    let imageCount = result.images.count
-
-                    if imageCount > 0 {
-                        let jsonData = try! JSONSerialization.data(withJSONObject: result.json, options: .prettyPrinted)
-                        let jsonObject = try! JSONSerialization.jsonObject(with: jsonData, options: []) as! [String: Any]
-                        let infoString = jsonObject["info"] as! String
-                        let infoData = infoString.data(using: .utf8)!
-                        let info = try! JSONSerialization.jsonObject(with: infoData, options: []) as! [String: Any]
-                        
-                        let prompt = info["prompt"] as? String ?? ""
-                        let negativePrompt = info["negative_prompt"] as? String ?? ""
-                        let sdModelName = info["sd_model_name"] as? String ?? ""
-                        let samplerName = info["sampler_name"] as? String ?? ""
-                        let clipSkip = info["clip_skip"] as? Int ?? -1
-                        let steps = info["steps"] as? Int ?? -1
-                        let cfgScale = info["cfg_scale"] as? Double ?? -1
-                        let denoisingStrength = info["denoising_strength"] as? Double ?? -1
-                        let seed = info["seed"] as? Int ?? -1
-                        let subseed = info["subseed"] as? Int ?? -1
-                        let subseedStrength = info["subseed_strength"] as? Double ?? -1
-                        let width = info["width"] as? Int ?? -1
-                        let height = info["height"] as? Int ?? -1
-                        let sdVaeName = info["sd_vae_name"] as? String
-                        let restoreFaces = info["restore_faces"] as? Int ?? -1
-
-                        for index in 0..<imageCount {
-                            let newInfo = [
-                                "prompt": prompt,
-                                "negative_prompt": negativePrompt,
-                                "sd_model_name": sdModelName,
-                                "sampler_name": samplerName,
-                                "clip_skip": clipSkip,
-                                "steps": steps,
-                                "cfg_scale": cfgScale,
-                                "denoising_strength": denoisingStrength,
-                                "seed": seed + index,
-                                "subseed": subseed + index,
-                                "subseed_strength": subseedStrength,
-                                "width": width,
-                                "height": height,
-                                "sd_vae_name": sdVaeName ?? "null",
-                                "restore_faces": restoreFaces
-                            ]
-                            let image = result.images[index]
-                            let seed = newInfo["seed"] as! Int
-                            let subSeed = newInfo["subseed"] as! Int
-                            let resultImage = ResultImage(image: image, info: newInfo, seed: seed, subSeed: subSeed)
-                            resultImages.append(resultImage)                            
-                        }
-                    }
-                                                            
-                    withAnimation{
-                        self.resultImages = resultImages
-                        self.isProgressing = false
-                        self.progress = 0
-                    }                    
-                }
-            }
-        }
+        let imgContext = Img2ImgGenerationContext(
+            mode: isInpaintMode ? .inpaint : .normal
+           , initImages: [baseImage]
+           , mask: maskImage
+           , maskBlur: viewModel.maskBlur
+           , inpaintingFill: viewModel.inpaintingFill
+           , inpaintFullRes: viewModel.inpaintFullRes != 0
+           , inpaintFullResPadding: viewModel.inpaintFullResPadding
+           , inpaintingMaskInvert: viewModel.maskInvert
+           , resizeMode: viewModel.resizeMode
+           , denoisingStrength: viewModel.denoisingStrength
+           , prompt: promptTemp
+           , negativePrompt: negativePromptTemp
+           , styles: []
+           , seed: viewModel.seed
+           , samplerName: viewModel.selectedSampler
+           , batchSize: batchCount
+           , steps: viewModel.steps
+           , cfgScale: viewModel.cfgScale
+           , width: intWidth
+           , height: intHeight
+           , overrideSettings: [
+            "sd_model_checkpoint": viewModel.selectedSDModel,
+            "CLIP_stop_at_last_layers": viewModel.clipSkip,
+            "sd_vae": viewModel.selectedSdVae
+           ]
+           , sendImages: true
+           , saveImages: false
+           , alwaysonScripts: viewModel.isInpaintMode && viewModel.softInpainting ? alwaysonScripts : [:]
+        )
+        
+        ContextQueueManager.shared.addContext(imgContext)        
     }
     
     func preparePrompts(selectedPromptStyles: [String], completion: @escaping (String, String) -> Void) {
@@ -477,53 +369,6 @@ struct GenerateImageButton: View {
     }
 }
 
-struct ResultSection: View {
-    var parent: StableImg2ImgView
-    var resultImages: [ResultImage]
-    @Binding var selectedIndex: Int
-    @State internal var resultSectionId = UUID()
-
-    var body: some View {
-        Section(header: Text("Result Images")) {
-            if !resultImages.isEmpty {
-                let firstImage = resultImages[0].image
-                let imageWidth = firstImage.size.width
-                let imageHeight = firstImage.size.height
-                let aspectRatio = imageWidth / imageHeight
-                let screenWidth = UIScreen.main.bounds.width
-                let screenHeight = UIScreen.main.bounds.height
-                let maxHeight = screenHeight * 0.6 // 60% of screen height
-                let calculatedHeight = min(screenWidth / aspectRatio, maxHeight)
-                
-                TabView(selection: $selectedIndex) {
-                    ForEach(resultImages.indices, id: \.self) { index in
-                        NavigationLink(destination: ResultImageView(img2imgView: parent, parent: self, resultImages: resultImages, sourceImage: parent.baseImage, selectedImageIndex: $selectedIndex)) {
-                            Image(uiImage: resultImages[index].image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .cornerRadius(10)
-                                .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
-                                .tag(index)
-                        }
-                    }
-                }
-                .tabViewStyle(.page)
-                .frame(height: calculatedHeight)
-                .id(resultSectionId)
-            }
-            
-            if parent.canInject && BrowserViewModel.shared.imageId != nil {
-                HStack {
-                    Spacer()
-                    Button("Inject into Browser") {
-                        parent.InjectImage()
-                    }.font(.title3).foregroundColor(.accentColor)
-                    Spacer()
-                }
-            }
-        }
-    }
-}
 
 struct Img2ImgModeSection: View {
     @Binding var isInpaintMode: Bool
@@ -546,12 +391,51 @@ struct InpaintOptionsSection: View {
     @ObservedObject var viewModel: StableSettingViewModel
     
     var body: some View {
-        DisclosureGroup("Inpaint options") {
-            MaskBlurPicker(maskBlur: $viewModel.maskBlur)
-            InpaintingFillPicker(inpaintingFill: $viewModel.inpaintingFill)
-            MaskInvertPicker(maskInvert: $viewModel.maskInvert)
-            InpaintFullResPicker(inpaintFullRes: $viewModel.inpaintFullRes)
+        MaskBlurPicker(maskBlur: $viewModel.maskBlur)
+        InpaintingFillPicker(inpaintingFill: $viewModel.inpaintingFill)
+        MaskInvertPicker(maskInvert: $viewModel.maskInvert)
+        InpaintFullResPicker(inpaintFullRes: $viewModel.inpaintFullRes)
+        if viewModel.inpaintFullRes == 1 {
             InpaintFullResPaddingSlider(inpaintFullResPadding: $viewModel.inpaintFullResPadding)
+        }
+              
+        DisclosureGroup("Soft Inpainting") {
+            Toggle(isOn: $viewModel.softInpainting.animation()) {
+                Text("Use Soft Inpainting")
+            }
+            
+            if viewModel.softInpainting {
+                SoftInpaintingSection(viewModel: viewModel)
+            }
+        }
+    }
+}
+
+struct SoftInpaintingSection: View {
+    @ObservedObject var viewModel: StableSettingViewModel
+    
+    var body: some View {
+        VStack {
+            HStack {
+                Text("Schedule Bias")
+                Spacer()
+                Text("\(viewModel.scheduleBias, specifier: "%.1f")")
+            }
+            Slider(value: $viewModel.scheduleBias, in: 0...8, step: 0.1)
+            
+            HStack {
+                Text("Preservation Strength")
+                Spacer()
+                Text("\(viewModel.preservationStrength, specifier: "%.2f")")
+            }
+            Slider(value: $viewModel.preservationStrength, in: 0...8, step: 0.05)
+            
+            HStack {
+                Text("Transition Contrast Boost")
+                Spacer()
+                Text("\(viewModel.transitionContrastBoost, specifier: "%.2f")")
+            }
+            Slider(value: $viewModel.transitionContrastBoost, in: 1...32, step: 0.05)
         }
     }
 }
@@ -561,10 +445,16 @@ struct GenerateOptionsSection: View {
     @ObservedObject var viewModel: StableSettingViewModel
     
     var body: some View {
-        Section(header: Text("Generation options")) {
+        Section(content: {
             PromptsSection(parent: self, viewModel: viewModel)
+        }, header: {
+            Text("PROMPTS")
+        })
+        Section(content: {
             SamplingOptionsSection(viewModel: viewModel)
-        }
+        }, header: {
+            Text("SAMPLING OPTIONS")
+        })
     }
 }
 

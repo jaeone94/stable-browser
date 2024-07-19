@@ -94,10 +94,6 @@ struct StableCanvasView: View {
  
                     }
                     if isCropMode {
-                        let baseImageTest = baseImage
-                        let scaleTest = scale
-                        let cropRectTest = cropRect
-                        let maskImageTest = maskImage
                         VStack {
                             CropView(cropRect: $cropRect, isCropMode: $isCropMode, baseImage: $baseImage, maskImage: $maskImage, scale: $scale)
                                 .cornerRadius(10)
@@ -257,8 +253,6 @@ struct StableCanvasView: View {
     func getImageFromDrawingView() {
         let baseImage = self.baseImage
         if let renderedImage = drawingView.getImage(width: width, height: height) {
-            printIamgeSize(image: baseImage)
-            printIamgeSize(image: renderedImage)
             parent.baseImage = baseImage
             parent.maskImage = renderedImage
             parent.width = width
@@ -266,14 +260,7 @@ struct StableCanvasView: View {
             presentationMode.wrappedValue.dismiss()
         }
     }
-    
-    func printIamgeSize(image: UIImage) {
-        let sizeInPoints = image.size
-        let sizeInPixels = CGSize(width: sizeInPoints.width * image.scale, height: sizeInPoints.height * image.scale)
-        print("스냅샷 크기 (포인트): \(sizeInPoints)") 
-        print("스냅샷 크기 (픽셀): \(sizeInPixels)") 
-    }
-
+        
     func resetZoomPan() {
         withAnimation{
             let widthScale = UIScreen.main.bounds.width / width * 0.90

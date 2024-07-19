@@ -29,6 +29,15 @@ class PhotoManagementService: ObservableObject {
             completion(albums)
         }
     }
+    
+    func updateAlbumThumbnails() {
+        try! realm.write {
+            for album in albums {
+                album.updateThumbnail()
+            }
+            objectWillChange.send() // Force update the view
+        }
+    }
 
 
     @MainActor func addAlbum(name: String, isSecret: Bool, password: String? = nil) {
@@ -52,6 +61,8 @@ class PhotoManagementService: ObservableObject {
                     padding: 140
                 )
             }
+            
+            ImageViewModel.shared.updateLastSavedAlbum(newAlbum)
         }
         if isSecret {
             if let password = password {
@@ -130,6 +141,7 @@ class PhotoManagementService: ObservableObject {
             fromAlbum.photos.remove(at: fromAlbum.photos.index(of: photo)!)
             toAlbum.photos.append(photo)
         }
+        updateAlbumThumbnails()
     }
 
     @MainActor func copyPhotoToAlbum(photo: SecurePhoto, toAlbum: Album) {
@@ -138,6 +150,7 @@ class PhotoManagementService: ObservableObject {
             photo.createdAt = Date()
             toAlbum.photos.append(photo)
         }
+        updateAlbumThumbnails()
     }
             
     
@@ -160,6 +173,8 @@ class PhotoManagementService: ObservableObject {
                 Album.photos.remove(at: index)
             }
         }
+        
+        updateAlbumThumbnails()
     }
     
     @MainActor func deletePhotoFromAlbum(Album: Album, id: ObjectId) {
@@ -168,6 +183,8 @@ class PhotoManagementService: ObservableObject {
                 Album.photos.remove(at: Album.photos.index(of: photo)!)
             }
         }
+        
+        updateAlbumThumbnails()
     }
     
     @MainActor func deletePhotosFromAlbum(Album: Album, photos: [SecurePhoto]) {
@@ -178,6 +195,8 @@ class PhotoManagementService: ObservableObject {
                 }
             }
         }
+        
+        updateAlbumThumbnails()
     }
 
     func tryUnlockAlbum(album: Album, password: String, completion: @escaping (Bool) -> Void) {
