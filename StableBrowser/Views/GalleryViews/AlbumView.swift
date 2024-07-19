@@ -15,7 +15,7 @@ struct AlbumView: View {
     @State internal var selectedPhotos: Set<ObjectId> = []
     
     @State private var showExportSheet = false
-    @State private var item: ActivityItem?
+    @State private var item: OpenPhotoActivityItem?
     
     @State var photosToMove: [OpenPhoto] = []
     
@@ -73,7 +73,7 @@ struct AlbumView: View {
                                     .if(!isSelectionMode) { view in
                                         view.contextMenu {
                                             Button(action: {
-                                                item = ActivityItem(images: [photo])
+                                                item = OpenPhotoActivityItem(images: [photo])
                                             }) {
                                                 Label("Share", systemImage: "square.and.arrow.up")
                                             }
@@ -171,7 +171,7 @@ struct AlbumView: View {
                         Button(action: {
                             let images = getSelectedImages()
                             if !images.isEmpty {
-                                item = ActivityItem(images: images)
+                                item = OpenPhotoActivityItem(images: images)
                             }
                         }) {
                             Image(systemName: "square.and.arrow.up")

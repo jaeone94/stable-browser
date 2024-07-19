@@ -49,7 +49,7 @@ class ImageActivityItemSource: NSObject, UIActivityItemSource {
 }
 
 struct ActivityView: UIViewControllerRepresentable {
-    @Binding var item: ActivityItem?
+    @Binding var item: OpenPhotoActivityItem?
     var permittedArrowDirections: UIPopoverArrowDirection
     var completion: UIActivityViewController.CompletionWithItemsHandler?
 
@@ -70,12 +70,12 @@ struct ActivityView: UIViewControllerRepresentable {
 }
 
 final class ActivityViewControllerWrapper: UIViewController {
-    var item: Binding<ActivityItem?>
+    var item: Binding<OpenPhotoActivityItem?>
     var permittedArrowDirections: UIPopoverArrowDirection
     var completion: UIActivityViewController.CompletionWithItemsHandler?
     
     init(
-        item: Binding<ActivityItem?>,
+        item: Binding<OpenPhotoActivityItem?>,
         permittedArrowDirections: UIPopoverArrowDirection,
         completion: UIActivityViewController.CompletionWithItemsHandler?)
     {
@@ -120,7 +120,7 @@ extension View {
     ///   - item: The item to use for the activity.
     ///   - permittedArrowDirections: The permitted arrow directions for the popover on iPad.
     ///   - onComplete: Called with the result, when the sheet is dismissed.
-    func activitySheet(_ item: Binding<ActivityItem?>, permittedArrowDirections: UIPopoverArrowDirection = .any, onComplete: UIActivityViewController.CompletionWithItemsHandler? = nil) -> some View {
+    func activitySheet(_ item: Binding<OpenPhotoActivityItem?>, permittedArrowDirections: UIPopoverArrowDirection = .any, onComplete: UIActivityViewController.CompletionWithItemsHandler? = nil) -> some View {
         let isPresented = Binding<Bool>(
             get: { item.wrappedValue != nil },
             set: { if !$0 { item.wrappedValue = nil } }

@@ -63,9 +63,17 @@
 		C681D08A2BB07300006E7090 /* SDVAESettingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C681D0892BB07300006E7090 /* SDVAESettingView.swift */; };
 		C681D08C2BB0774B006E7090 /* OverrideSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = C681D08B2BB0774B006E7090 /* OverrideSettings.swift */; };
 		C68C852B2B99B33B009F90B4 /* BrowserTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68C852A2B99B33B009F90B4 /* BrowserTabView.swift */; };
-		C68F9C2A2C45F73A00FAB088 /* ActivityItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C292C45F73A00FAB088 /* ActivityItem.swift */; };
+		C68F9C2A2C45F73A00FAB088 /* OpenPhotoActivityItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C292C45F73A00FAB088 /* OpenPhotoActivityItem.swift */; };
 		C68F9C2C2C45F79000FAB088 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C2B2C45F79000FAB088 /* ActivityView.swift */; };
 		C68F9C2E2C461D1300FAB088 /* PhotosMoveDialog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C2D2C461D1300FAB088 /* PhotosMoveDialog.swift */; };
+		C68F9C352C47923700FAB088 /* StableGenerationContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C342C47923700FAB088 /* StableGenerationContext.swift */; };
+		C68F9C372C47933400FAB088 /* Img2ImgGenerationContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C362C47933400FAB088 /* Img2ImgGenerationContext.swift */; };
+		C68F9C392C47948700FAB088 /* Txt2ImgGenerationContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C382C47948700FAB088 /* Txt2ImgGenerationContext.swift */; };
+		C68F9C3B2C47EC1300FAB088 /* ContextQueueManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C3A2C47EC1300FAB088 /* ContextQueueManager.swift */; };
+		C68F9C3D2C47EE7400FAB088 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C3C2C47EE7400FAB088 /* CacheManager.swift */; };
+		C68F9C3F2C47F7D400FAB088 /* ContextQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C3E2C47F7D400FAB088 /* ContextQueueView.swift */; };
+		C68F9C412C48E5CB00FAB088 /* MemoryUsageMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C402C48E5CB00FAB088 /* MemoryUsageMonitor.swift */; };
+		C68F9C432C49308000FAB088 /* ContextHistoryQueueView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C68F9C422C49308000FAB088 /* ContextHistoryQueueView.swift */; };
 		C69050842BABCA97005ED598 /* StableImg2ImgView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69050832BABCA97005ED598 /* StableImg2ImgView.swift */; };
 		C69050862BAC1F19005ED598 /* StableCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69050852BAC1F19005ED598 /* StableCanvasView.swift */; };
 		C69050882BACA7D8005ED598 /* StableStyleSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69050872BACA7D8005ED598 /* StableStyleSelectView.swift */; };
@@ -174,9 +182,17 @@
 		C681D0892BB07300006E7090 /* SDVAESettingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDVAESettingView.swift; sourceTree = "<group>"; };
 		C681D08B2BB0774B006E7090 /* OverrideSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverrideSettings.swift; sourceTree = "<group>"; };
 		C68C852A2B99B33B009F90B4 /* BrowserTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserTabView.swift; sourceTree = "<group>"; };
-		C68F9C292C45F73A00FAB088 /* ActivityItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityItem.swift; sourceTree = "<group>"; };
+		C68F9C292C45F73A00FAB088 /* OpenPhotoActivityItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenPhotoActivityItem.swift; sourceTree = "<group>"; };
 		C68F9C2B2C45F79000FAB088 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		C68F9C2D2C461D1300FAB088 /* PhotosMoveDialog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosMoveDialog.swift; sourceTree = "<group>"; };
+		C68F9C342C47923700FAB088 /* StableGenerationContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StableGenerationContext.swift; sourceTree = "<group>"; };
+		C68F9C362C47933400FAB088 /* Img2ImgGenerationContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Img2ImgGenerationContext.swift; sourceTree = "<group>"; };
+		C68F9C382C47948700FAB088 /* Txt2ImgGenerationContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Txt2ImgGenerationContext.swift; sourceTree = "<group>"; };
+		C68F9C3A2C47EC1300FAB088 /* ContextQueueManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextQueueManager.swift; sourceTree = "<group>"; };
+		C68F9C3C2C47EE7400FAB088 /* CacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheManager.swift; sourceTree = "<group>"; };
+		C68F9C3E2C47F7D400FAB088 /* ContextQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextQueueView.swift; sourceTree = "<group>"; };
+		C68F9C402C48E5CB00FAB088 /* MemoryUsageMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryUsageMonitor.swift; sourceTree = "<group>"; };
+		C68F9C422C49308000FAB088 /* ContextHistoryQueueView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContextHistoryQueueView.swift; sourceTree = "<group>"; };
 		C69050832BABCA97005ED598 /* StableImg2ImgView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StableImg2ImgView.swift; sourceTree = "<group>"; };
 		C69050852BAC1F19005ED598 /* StableCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StableCanvasView.swift; sourceTree = "<group>"; };
 		C69050872BACA7D8005ED598 /* StableStyleSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StableStyleSelectView.swift; sourceTree = "<group>"; };
@@ -397,13 +413,15 @@
 		C63AC8742BAAD5330052B471 /* Components */ = {
 			isa = PBXGroup;
 			children = (
+				C65210392BBE29B900EA1E51 /* Dialogs */,
 				C68F9C282C45F72600FAB088 /* ActivityView */,
 				C65210492BBE63C000EA1E51 /* MenuSwitcher.swift */,
 				C63AC8752BAAD5450052B471 /* SpinnerView.swift */,
 				C65210472BBE536F00EA1E51 /* Toast.swift */,
-				C65210392BBE29B900EA1E51 /* Dialogs */,
 				C6A3E6FA2BC7B81100C21826 /* MenuFloatingIcon.swift */,
 				C6FD99242C32A06A001E4C8B /* GIFImage.swift */,
+				C68F9C3E2C47F7D400FAB088 /* ContextQueueView.swift */,
+				C68F9C422C49308000FAB088 /* ContextHistoryQueueView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -446,6 +464,8 @@
 			isa = PBXGroup;
 			children = (
 				C656109A2BA04457004BB444 /* WebViewManager.swift */,
+				C68F9C3A2C47EC1300FAB088 /* ContextQueueManager.swift */,
+				C68F9C3C2C47EE7400FAB088 /* CacheManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -453,10 +473,20 @@
 		C68F9C282C45F72600FAB088 /* ActivityView */ = {
 			isa = PBXGroup;
 			children = (
-				C68F9C292C45F73A00FAB088 /* ActivityItem.swift */,
+				C68F9C292C45F73A00FAB088 /* OpenPhotoActivityItem.swift */,
 				C68F9C2B2C45F79000FAB088 /* ActivityView.swift */,
 			);
 			path = ActivityView;
+			sourceTree = "<group>";
+		};
+		C68F9C332C47921400FAB088 /* StableGenerationService */ = {
+			isa = PBXGroup;
+			children = (
+				C68F9C342C47923700FAB088 /* StableGenerationContext.swift */,
+				C68F9C362C47933400FAB088 /* Img2ImgGenerationContext.swift */,
+				C68F9C382C47948700FAB088 /* Txt2ImgGenerationContext.swift */,
+			);
+			path = StableGenerationService;
 			sourceTree = "<group>";
 		};
 		C696537E2BC03B8F00FF6293 /* GalleryViewModels */ = {
@@ -612,12 +642,14 @@
 		C6EDB4262B8496C7003A5EAE /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				C68F9C332C47921400FAB088 /* StableGenerationService */,
 				C63AC8652BAAA9830052B471 /* LocalNetworkService.swift */,
 				C6AF11CD2BBBF52100C5D3CC /* AuthenticationService.swift */,
 				C6E814BB2BBCE22300D8445E /* PhotoManagementService.swift */,
 				C656056C2BBF8E620063513A /* MenuService.swift */,
 				C656056E2BBF8E7D0063513A /* OverlayService.swift */,
 				C6F7288D2BCE8BC6007A345D /* InjectHistoryService.swift */,
+				C68F9C402C48E5CB00FAB088 /* MemoryUsageMonitor.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -780,6 +812,7 @@
 				C63AC8762BAAD5450052B471 /* SpinnerView.swift in Sources */,
 				C656109B2BA04457004BB444 /* WebViewManager.swift in Sources */,
 				C6F7288E2BCE8BC6007A345D /* InjectHistoryService.swift in Sources */,
+				C68F9C372C47933400FAB088 /* Img2ImgGenerationContext.swift in Sources */,
 				C6EE6FF02BADD201001D448F /* CropView.swift in Sources */,
 				C60E09852BB08B7900A72244 /* SeedTextField.swift in Sources */,
 				C60E09832BB08B6500A72244 /* DenoisingStrengthSlider.swift in Sources */,
@@ -812,13 +845,19 @@
 				C65610982BA0412C004BB444 /* BrowserViewModel.swift in Sources */,
 				C6BEA7D52B86FBDA0049CF98 /* WebView.swift in Sources */,
 				C63AC85E2BAA7F820052B471 /* NetworkUtils.swift in Sources */,
-				C68F9C2A2C45F73A00FAB088 /* ActivityItem.swift in Sources */,
+				C68F9C3F2C47F7D400FAB088 /* ContextQueueView.swift in Sources */,
+				C68F9C352C47923700FAB088 /* StableGenerationContext.swift in Sources */,
+				C68F9C2A2C45F73A00FAB088 /* OpenPhotoActivityItem.swift in Sources */,
 				C6A3E6F52BC3C11900C21826 /* PasswordAlertView.swift in Sources */,
 				C6A419192BFC581C00B697E2 /* StableTxt2ImgView.swift in Sources */,
 				C6E814BE2BBCE27800D8445E /* SavePhotoView.swift in Sources */,
 				C63AC8642BAA92A30052B471 /* ServerConnectionView.swift in Sources */,
+				C68F9C3D2C47EE7400FAB088 /* CacheManager.swift in Sources */,
+				C68F9C392C47948700FAB088 /* Txt2ImgGenerationContext.swift in Sources */,
+				C68F9C3B2C47EC1300FAB088 /* ContextQueueManager.swift in Sources */,
 				C65610962BA0412C004BB444 /* WebViewModel+UIScrollViewDelegate.swift in Sources */,
 				C6D678362BC906B800DE81B9 /* ImagePickerView.swift in Sources */,
+				C68F9C432C49308000FAB088 /* ContextHistoryQueueView.swift in Sources */,
 				C69050882BACA7D8005ED598 /* StableStyleSelectView.swift in Sources */,
 				C656056F2BBF8E7D0063513A /* OverlayService.swift in Sources */,
 				C652103B2BBE2A2200EA1E51 /* NewAlbumDialog.swift in Sources */,
@@ -838,6 +877,7 @@
 				C624CE6D2BFF34B300A2AEE6 /* TextResultImageView.swift in Sources */,
 				C63AC8662BAAA9830052B471 /* LocalNetworkService.swift in Sources */,
 				C6AF11CC2BBBEB2600C5D3CC /* UIExtensions.swift in Sources */,
+				C68F9C412C48E5CB00FAB088 /* MemoryUsageMonitor.swift in Sources */,
 				C69050862BAC1F19005ED598 /* StableCanvasView.swift in Sources */,
 				C6B9CE7A2BB82661006E2F01 /* StringConstants.swift in Sources */,
 				C63AC8612BAA92590052B471 /* StableSettingsView.swift in Sources */,
@@ -991,7 +1031,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 15;
 				DEVELOPMENT_ASSET_PATHS = "\"StableBrowser/Preview Content\"";
 				DEVELOPMENT_TEAM = R4GVLC4STN;
 				ENABLE_PREVIEWS = YES;
@@ -1036,7 +1076,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 15;
 				DEVELOPMENT_ASSET_PATHS = "\"StableBrowser/Preview Content\"";
 				DEVELOPMENT_TEAM = R4GVLC4STN;
 				ENABLE_PREVIEWS = YES;

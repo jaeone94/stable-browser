@@ -7,6 +7,7 @@ struct StableBrowserApp: App {
     @StateObject var photoManagementService = PhotoManagementService.shared
     @StateObject var overlayService = OverlayService.shared
     @AppStorage("userAgreedToTerms") private var userAgreedToTerms = false
+    @State internal var showHistoryView = false
     
     var body: some Scene {
         WindowGroup {
@@ -36,12 +37,23 @@ struct StableBrowserApp: App {
                 case "settings":
                     NavigationView {
                         StableSettingsView()
-                    }.navigationViewStyle(StackNavigationViewStyle())
+                    }
+                    .navigationViewStyle(StackNavigationViewStyle())
                     .transition(.opacity)
                 default:
                     EmptyView().background(Color.red)
-//                            .transition(.opacity)
                 }
+                
+                
+                VStack {
+                    if showHistoryView {
+                        ContextHistoryQueueView(isPresented: $showHistoryView)
+                            .transition(.move(edge: .trailing).combined(with: .opacity))
+                    }
+                }.transition(.move(edge: .trailing).combined(with: .opacity))
+                .animation(.easeInOut, value: showHistoryView)
+                
+                
                 
                 ZStack { // Global Dialogs
                     if photoManagementService.isNewAlbumDialogVisible {
@@ -75,11 +87,22 @@ struct StableBrowserApp: App {
                 .animation(.easeInOut, value: menuService.isMenuSwitcherVisible)
             }.animation(.easeInOut, value: menuService.selectedMenu)
         }
+        .onChange(of: menuService.triggerMenuChange, { oldValue, newValue in
+            withAnimation {
+                showHistoryView = false
+            }
+        })
         .overlay {
-            VStack {
+            ZStack {    
+                VStack {
+                    if !showHistoryView {
+                        ContextQueueView(parent: self)
+                    }
+                }
+                .transition(.opacity)
+                .animation(.easeInOut, value: showHistoryView)
                 MenuFloatingIcon()
             }
         }
-        
     }
 }

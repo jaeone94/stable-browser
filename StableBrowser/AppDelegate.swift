@@ -35,5 +35,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     
     func applicationWillTerminate(_ application: UIApplication) {
         StableSettingViewModel.shared.saveCurrentSettings()
-    }
+        CacheManager.shared.clearCache()
+    }    
 }

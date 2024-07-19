@@ -124,43 +124,48 @@ struct ServerConnectionView: View {
     private func connectToWebUI() {
         let address = connectionType == 0 ? ipAddress : url
         let (cleanAddress, useHttps, cleanPort) = StringUtils.processAddress(address, port: port)
-        let api = WebUIApi(host: cleanAddress, port: cleanPort, useHttps: useHttps)
-        
-        Task {
-            if let options = await api.getOptions() {
-                stableSettingViewModel.webUIApi = api
-                stableSettingViewModel.ip = address
-                stableSettingViewModel.port = String(cleanPort)
-                isConnected = true
-                
-                DispatchQueue.main.async {
-                    stableSettingViewModel.isConnected = true
-                    stableSettingViewModel.options = options
-                    stableSettingViewModel.selectedSDModel = options.sd_model_checkpoint ?? ""
-                    self.isConnected = true
-                }
-                stableSettingViewModel.saveLastUrl()
-                
-                // Call the getSDModels function after successful server connection
-                await stableSettingViewModel.getSDModels()
-                await stableSettingViewModel.getPromptStyles()
-                await stableSettingViewModel.getSamplers()
-                await stableSettingViewModel.getSDVAE()
-                await stableSettingViewModel.getLoras()
-                
-                OverlayService.shared.hideOverlaySpinner()
-                Toast.shared.present(
-                    title: "Server connected",
-                    symbol: "checkmark.circle.fill",
-                    isUserInteractionEnabled: true,
-                    timing: .medium
-                )
-            } else {
-                DispatchQueue.main.async {
-                    stableSettingViewModel.isConnected = false
-                    isConnected = false
+        if stableSettingViewModel.webUIApi == nil {
+            stableSettingViewModel.webUIApi = WebUIApi.shared
+        }
+        if let api = stableSettingViewModel.webUIApi {
+            api.setConnectionProperties(host: cleanAddress, port: cleanPort, useHttps: useHttps)
+            
+            Task {
+                if let options = await api.getOptions() {
+                    stableSettingViewModel.webUIApi = api
+                    stableSettingViewModel.ip = address
+                    stableSettingViewModel.port = String(cleanPort)
+                    isConnected = true
+                    
+                    DispatchQueue.main.async {
+                        stableSettingViewModel.isConnected = true
+                        stableSettingViewModel.options = options
+                        stableSettingViewModel.selectedSDModel = options.sd_model_checkpoint ?? ""
+                        self.isConnected = true
+                    }
+                    stableSettingViewModel.saveLastUrl()
+                    
+                    // Call the getSDModels function after successful server connection
+                    await stableSettingViewModel.getSDModels()
+                    await stableSettingViewModel.getPromptStyles()
+                    await stableSettingViewModel.getSamplers()
+                    await stableSettingViewModel.getSDVAE()
+                    await stableSettingViewModel.getLoras()
+                    
                     OverlayService.shared.hideOverlaySpinner()
-                    showAlert = true
+                    Toast.shared.present(
+                        title: "Server connected",
+                        symbol: "checkmark.circle.fill",
+                        isUserInteractionEnabled: true,
+                        timing: .medium
+                    )
+                } else {
+                    DispatchQueue.main.async {
+                        stableSettingViewModel.isConnected = false
+                        isConnected = false
+                        OverlayService.shared.hideOverlaySpinner()
+                        showAlert = true
+                    }
                 }
             }
         }

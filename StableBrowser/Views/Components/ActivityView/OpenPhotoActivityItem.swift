@@ -1,7 +1,7 @@
 import UIKit
 
 /// The activity used to bring up the `ActivityView` via the `activitySheet` modifier
-struct ActivityItem {
+struct OpenPhotoActivityItem {
     var images: [OpenPhoto]
     var activities: [UIActivity]
     var excludedTypes: [UIActivity.ActivityType]

@@ -37,7 +37,15 @@ class StableSettingViewModel : ObservableObject {
             self.height = self.baseImage.size.height
         }
     }
+    
     @Published var maskImage: UIImage?
+    @Published var baseImageFromResult: UIImage = UIImage() { // Separate properties for changing baseImage and maskImage simultaneously
+        didSet {
+            self.baseImage = self.baseImageFromResult
+            self.maskImage = nil
+        }
+    }
+    
     @Published var width: CGFloat = 0
     @Published var height: CGFloat = 0
 
@@ -95,7 +103,8 @@ class StableSettingViewModel : ObservableObject {
     public func tryAutoConnectToServer() {
         if let ipAddress = ip, let port = port {
             let (cleanAddress, useHttps, cleanPort) = StringUtils.processAddress(ipAddress, port: port)
-            let api = WebUIApi(host: cleanAddress, port: cleanPort, useHttps: useHttps)
+            let api = WebUIApi.shared
+            api.setConnectionProperties(host: cleanAddress, port: cleanPort, useHttps: useHttps)
             
             Task {
                 await connectToServer(api: api)
@@ -138,17 +147,7 @@ class StableSettingViewModel : ObservableObject {
             }
         }
     }    
-    
-    var isGenerating: Bool {
-        img2imgState == .inProgress || txt2imgState == .inProgress
-    }
-    
-    func updateProgress(_ newProgress: Float) {
-        DispatchQueue.main.async {
-            self.progress = newProgress
-        }
-    }
-
+  
     public func saveCurrentSettings() {
         if isConnected ?? false {
             saveSampler()

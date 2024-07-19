@@ -7,6 +7,7 @@ class MenuService: ObservableObject {
     @Published var isMenuSwitcherVisible = false
     @Published var selectedMenu: Menu
     @Published var triggerReimportTab: Bool = false
+    @Published var triggerMenuChange: Bool = false
     
     @Published var isFloaingMenuButtonVisible: Bool = true
     
@@ -36,6 +37,7 @@ class MenuService: ObservableObject {
         withAnimation {
             selectedMenu = menu
         }
+        triggerMenuChange.toggle()
     }
     
 }

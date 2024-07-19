@@ -31,7 +31,7 @@ struct PhotoView: View {
     
     @State private var showInfoView = false
     
-    @State private var item: ActivityItem?
+    @State private var item: OpenPhotoActivityItem?
     
     @State private var doubleTapCount: Int = 0
     
@@ -202,6 +202,7 @@ struct PhotoView: View {
                                     .foregroundColor(.white)
                                     .contentShape(Rectangle())
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .padding()
                             }
                             .contentShape(Rectangle())
                             .frame(maxWidth: .infinity)
@@ -213,7 +214,7 @@ struct PhotoView: View {
                         
                         HStack(spacing: 30) {
                             Button(action: {
-                                item = ActivityItem(images: [imageViewModel.selectedPhotos[currentIndex]])
+                                item = OpenPhotoActivityItem(images: [imageViewModel.selectedPhotos[currentIndex]])
                             }) {
                                 Image(systemName: "square.and.arrow.up")
                                     .foregroundColor(.white)
