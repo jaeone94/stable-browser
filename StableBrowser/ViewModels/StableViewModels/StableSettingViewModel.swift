@@ -88,23 +88,14 @@ class StableSettingViewModel : ObservableObject {
     @Published var txt2imgResultImages: [ResultImage] = []
     @Published var img2imgResultImages: [ResultImage] = []
 
-    var ip: String?
-    var port: String?
+    var connectedUrl: String?
 
-    var fullUrl : String {
-        get {
-            if let ipAddress = ip, let port = port {
-                return ipAddress + ":" + port
-            }
-            return ""
-        }
-    }
     
     public func tryAutoConnectToServer() {
-        if let ipAddress = ip, let port = port {
-            let (cleanAddress, useHttps, cleanPort) = StringUtils.processAddress(ipAddress, port: port)
+        if let url = connectedUrl {
+            let processedAddress = AddressProcessor.processAddress(url)
             let api = WebUIApi.shared
-            api.setConnectionProperties(host: cleanAddress, port: cleanPort, useHttps: useHttps)
+            api.setConnectionProperties(processedAddress)
             
             Task {
                 await connectToServer(api: api)
@@ -354,15 +345,14 @@ class StableSettingViewModel : ObservableObject {
     }
 
 
-    func setServer(ip: String, port: String) {
-        self.ip = ip
-        self.port = port
+    func setServer(url: String) {
+        self.connectedUrl = url
         saveLastUrl()
     }
     
     internal func saveLastUrl() {
         let encoder = JSONEncoder()
-        if let encoded = try? encoder.encode(fullUrl) {
+        if let encoded = try? encoder.encode(self.connectedUrl) {
             UserDefaults.standard.set(encoded, forKey: "lastUrl")
         }
     }
@@ -371,13 +361,10 @@ class StableSettingViewModel : ObservableObject {
         if let savedLastUrl = UserDefaults.standard.object(forKey: "lastUrl") as? Data {
             let decoder = JSONDecoder()
             if let loadedLastUrl = try? decoder.decode(String.self, from: savedLastUrl) {
-                let url = loadedLastUrl.split(separator: ":")
-                if loadedLastUrl.contains("http") {
-                    self.ip = String(url[0] + ":" + url[1])
-                    self.port = String(url[2])
+                if !loadedLastUrl.contains("http") && !loadedLastUrl.contains("https") {
+                    self.connectedUrl = "http://" + loadedLastUrl
                 }else {
-                    self.ip = String(url[0])
-                    self.port = String(url[1])
+                    self.connectedUrl = loadedLastUrl
                 }
             }
         }

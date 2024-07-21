@@ -33,7 +33,14 @@ struct ContextHistoryQueueView: View {
             .animation(.easeInOut, value: queueManager.historyQueue)
             .navigationBarTitle("GENERATION RESULTS", displayMode: .inline)
             .navigationBarItems(leading: Button("Back") {
-                isPresented = false
+                withAnimation {
+                    isPresented = false
+                }
+                if MenuService.shared.selectedMenu.name == "browser" {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        MenuService.shared.triggerReimportTab.toggle()
+                    }
+                }
             }, trailing: Button("Clear") {
                 queueManager.clearHistoryQueue()
             })
