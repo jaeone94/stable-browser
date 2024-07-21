@@ -56,6 +56,8 @@
 		C65610972BA0412C004BB444 /* WebViewModel+WKNavigationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C65610902BA0412C004BB444 /* WebViewModel+WKNavigationDelegate.swift */; };
 		C65610982BA0412C004BB444 /* BrowserViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C65610922BA0412C004BB444 /* BrowserViewModel.swift */; };
 		C656109B2BA04457004BB444 /* WebViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C656109A2BA04457004BB444 /* WebViewManager.swift */; };
+		C65AEC3D2C4D1DFA006287D9 /* AddressProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C65AEC3C2C4D1DFA006287D9 /* AddressProcessor.swift */; };
+		C65AEC3F2C4D2557006287D9 /* AddressClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C65AEC3E2C4D2557006287D9 /* AddressClassifier.swift */; };
 		C66BD3222BB5B9800074C5EF /* EditPromptStyleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C66BD3212BB5B9800074C5EF /* EditPromptStyleView.swift */; };
 		C66BD3242BB5C46D0074C5EF /* LocalPromptStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C66BD3232BB5C46D0074C5EF /* LocalPromptStyle.swift */; };
 		C67B783B2BB14AE800B7EAAD /* ImageBasketView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C67B783A2BB14AE800B7EAAD /* ImageBasketView.swift */; };
@@ -174,6 +176,8 @@
 		C65610902BA0412C004BB444 /* WebViewModel+WKNavigationDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "WebViewModel+WKNavigationDelegate.swift"; sourceTree = "<group>"; };
 		C65610922BA0412C004BB444 /* BrowserViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BrowserViewModel.swift; sourceTree = "<group>"; };
 		C656109A2BA04457004BB444 /* WebViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewManager.swift; sourceTree = "<group>"; };
+		C65AEC3C2C4D1DFA006287D9 /* AddressProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressProcessor.swift; sourceTree = "<group>"; };
+		C65AEC3E2C4D2557006287D9 /* AddressClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressClassifier.swift; sourceTree = "<group>"; };
 		C66BD3212BB5B9800074C5EF /* EditPromptStyleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPromptStyleView.swift; sourceTree = "<group>"; };
 		C66BD3232BB5C46D0074C5EF /* LocalPromptStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPromptStyle.swift; sourceTree = "<group>"; };
 		C67B783A2BB14AE800B7EAAD /* ImageBasketView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageBasketView.swift; sourceTree = "<group>"; };
@@ -521,6 +525,8 @@
 				C63AC8512BAA71B90052B471 /* ImageUtils.swift */,
 				C63AC85D2BAA7F820052B471 /* NetworkUtils.swift */,
 				C60E09882BB1265F00A72244 /* NotificationFlags.swift */,
+				C65AEC3C2C4D1DFA006287D9 /* AddressProcessor.swift */,
+				C65AEC3E2C4D2557006287D9 /* AddressClassifier.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -816,6 +822,7 @@
 				C6EE6FF02BADD201001D448F /* CropView.swift in Sources */,
 				C60E09852BB08B7900A72244 /* SeedTextField.swift in Sources */,
 				C60E09832BB08B6500A72244 /* DenoisingStrengthSlider.swift in Sources */,
+				C65AEC3D2C4D1DFA006287D9 /* AddressProcessor.swift in Sources */,
 				C6FD99132C325BAB001E4C8B /* AppUsageGuideView.swift in Sources */,
 				C6FD99152C327F6C001E4C8B /* ModelInstallationGuideView.swift in Sources */,
 				C63AC8552BAA72860052B471 /* WebUIApiResult.swift in Sources */,
@@ -842,6 +849,7 @@
 				C65610942BA0412C004BB444 /* WebViewModel.swift in Sources */,
 				C63DFCFE2BA72F7800DC6074 /* BridgeViewModel.swift in Sources */,
 				C60E097D2BB08B2C00A72244 /* StepPicker.swift in Sources */,
+				C65AEC3F2C4D2557006287D9 /* AddressClassifier.swift in Sources */,
 				C65610982BA0412C004BB444 /* BrowserViewModel.swift in Sources */,
 				C6BEA7D52B86FBDA0049CF98 /* WebView.swift in Sources */,
 				C63AC85E2BAA7F820052B471 /* NetworkUtils.swift in Sources */,
@@ -1031,7 +1039,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_ASSET_PATHS = "\"StableBrowser/Preview Content\"";
 				DEVELOPMENT_TEAM = R4GVLC4STN;
 				ENABLE_PREVIEWS = YES;
@@ -1042,6 +1050,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.graphics-design";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The app uses the camera to take photos and use them as source images.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "This app supports biometric authentication.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app uses local network discovery. Please allow it to communicate with devices on your network.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "The app supports saving the photos you create to a photo album.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app provides the ability to upload and edit photos from a user's gallery. ";
@@ -1055,6 +1064,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1;
+				NEW_SETTING = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.GigglySoft.StableBrowser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1076,7 +1086,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				DEVELOPMENT_ASSET_PATHS = "\"StableBrowser/Preview Content\"";
 				DEVELOPMENT_TEAM = R4GVLC4STN;
 				ENABLE_PREVIEWS = YES;
@@ -1087,6 +1097,7 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.graphics-design";
 				INFOPLIST_KEY_NSCameraUsageDescription = "The app uses the camera to take photos and use them as source images.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "This app supports biometric authentication.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSLocalNetworkUsageDescription = "This app uses local network discovery. Please allow it to communicate with devices on your network.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "The app supports saving the photos you create to a photo album.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "The app provides the ability to upload and edit photos from a user's gallery. ";
@@ -1100,6 +1111,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.1;
+				NEW_SETTING = "";
 				PRODUCT_BUNDLE_IDENTIFIER = com.GigglySoft.StableBrowser;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

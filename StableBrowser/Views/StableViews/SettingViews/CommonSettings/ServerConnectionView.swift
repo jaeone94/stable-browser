@@ -94,12 +94,13 @@ struct ServerConnectionView: View {
         .padding()
         .background(Color(UIColor.systemBackground))
         .onAppear {
-            if let savedAddress = stableSettingViewModel.ip {
-                if savedAddress.contains("://") {
+            if let savedAddress = stableSettingViewModel.connectedUrl {
+                if AddressClassifier.classifyAddress(savedAddress) == .url {
                     self.url = savedAddress
                     self.connectionType = 1
-                } else {
-                    let components = savedAddress.split(separator: ":")
+                } else if AddressClassifier.classifyAddress(savedAddress) == .ip {
+                    let (_, cleanAddress) = AddressProcessor.extractScheme(from: savedAddress)
+                    let components = cleanAddress.split(separator: ":")
                     if components.count > 1 {
                         self.ipAddress = String(components[0])
                         self.port = String(components[1])
@@ -109,9 +110,7 @@ struct ServerConnectionView: View {
                     self.connectionType = 0
                 }
             }
-            if let savedPort = stableSettingViewModel.port, self.connectionType == 0 {
-                self.port = savedPort
-            }
+
             if let savedConnectionStatus = stableSettingViewModel.isConnected {
                 self.isConnected = savedConnectionStatus
             }
@@ -122,19 +121,18 @@ struct ServerConnectionView: View {
     }
     
     private func connectToWebUI() {
-        let address = connectionType == 0 ? ipAddress : url
-        let (cleanAddress, useHttps, cleanPort) = StringUtils.processAddress(address, port: port)
+        let address = connectionType == 0 ? ("http://" + ipAddress + ":" + (port.isEmpty ? "7860" : port)) : url
+        let processedAddress = AddressProcessor.processAddress(address)
         if stableSettingViewModel.webUIApi == nil {
             stableSettingViewModel.webUIApi = WebUIApi.shared
         }
         if let api = stableSettingViewModel.webUIApi {
-            api.setConnectionProperties(host: cleanAddress, port: cleanPort, useHttps: useHttps)
+            api.setConnectionProperties(processedAddress)
             
             Task {
                 if let options = await api.getOptions() {
                     stableSettingViewModel.webUIApi = api
-                    stableSettingViewModel.ip = address
-                    stableSettingViewModel.port = String(cleanPort)
+                    stableSettingViewModel.connectedUrl = address
                     isConnected = true
                     
                     DispatchQueue.main.async {

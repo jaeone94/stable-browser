@@ -38,9 +38,8 @@ class WebUIApi: ObservableObject {
     
     private var session: URLSession
     
-    init(host: String = "127.0.0.1", port: Int = 7860, useHttps: Bool = false, sampler: String = "Euler a", steps: Int = 20) {
-        let scheme = useHttps ? "https" : "http"
-        if useHttps {
+    init(host: String = "127.0.0.1", useUrl: Bool = false, scheme: String = "http", port: Int = 7860, sampler: String = "Euler a", steps: Int = 20) {
+        if useUrl {
             self.baseURL = URL(string: "\(scheme)://\(host)/sdapi/v1")!
         }else {
             self.baseURL = URL(string: "\(scheme)://\(host):\(port)/sdapi/v1")!
@@ -52,12 +51,11 @@ class WebUIApi: ObservableObject {
         self.session = URLSession.shared
     }
     
-    public func setConnectionProperties(host: String = "127.0.0.1", port: Int = 7860, useHttps: Bool = false, sampler: String = "Euler a", steps: Int = 20) {
-        let scheme = useHttps ? "https" : "http"
-        if useHttps {
-            self.baseURL = URL(string: "\(scheme)://\(host)/sdapi/v1")!
+    public func setConnectionProperties(_ processedAddress: ProcessedAddress, sampler: String = "Euler a", steps: Int = 20) {
+        if processedAddress.hasPort {
+            self.baseURL = URL(string: "\(processedAddress.scheme)://\(processedAddress.cleanAddress):\(processedAddress.port)/sdapi/v1")!
         }else {
-            self.baseURL = URL(string: "\(scheme)://\(host):\(port)/sdapi/v1")!
+            self.baseURL = URL(string: "\(processedAddress.scheme)://\(processedAddress.cleanAddress)/sdapi/v1")!
         }
         
         self.defaultSampler = sampler
