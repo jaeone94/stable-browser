@@ -1,4 +1,4 @@
-enum HiResUpscaler: String {
+enum HiResUpscaler: String, CaseIterable {
     case none = "None"
     case latent = "Latent"
     case latentAntialiased = "Latent (antialiased)"

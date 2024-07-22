@@ -1,17 +1,11 @@
 import SwiftUI
 import RealmSwift
+
 struct StableTxt2ImgView: View {
     @StateObject var viewModel = StableSettingViewModel.shared
     
-    
-    // For progress bar
     @State private var timer: Timer?
-    
     @State private var isConnected = false
-    
-    // txt2img specific options
-    
-    
     @State internal var resultImages: [ResultImage] = StableSettingViewModel.shared.txt2imgResultImages {
         didSet {
             StableSettingViewModel.shared.txt2imgResultImages = self.resultImages
@@ -35,7 +29,7 @@ struct StableTxt2ImgView: View {
                     }
                     
                     Section(content: {
-                        SamplingOptionsSection(viewModel: viewModel)
+                        TxtSamplingOptionsSection(viewModel: viewModel)
                     }, header: {
                         Text("SAMPLING OPTIONS")
                     })
@@ -46,13 +40,15 @@ struct StableTxt2ImgView: View {
                         Text("UPSCALING")
                     })
                     
-                    
-                    
-                    Section("TXT2IMG GENERATE ") {
-                        GenerateImageButton(batchCount: $viewModel.txt2imgBatchCount, doGenerate: doTxt2Img)
-                        Stepper(value: $viewModel.txt2imgBatchCount, in: 1...10) {
-                            Text("Batch Size: \(viewModel.txt2imgBatchCount)")
+                    Section("TXT2IMG GENERATE") {
+                        GenerateImageButton(batchCount: $viewModel.txt2imgBatchSize, doGenerate: doTxt2Img)
+                        Stepper(value: $viewModel.txt2imgBatchSize, in: 1...10) {
+                            Text("Batch Size: \(viewModel.txt2imgBatchSize)")
                         }
+                    }
+                    
+                    if !resultImages.isEmpty {
+                        TextResultSection(parent: self, resultImages: resultImages, selectedIndex: $selectedIndex)
                     }
                     
                 } else {
@@ -80,7 +76,6 @@ struct StableTxt2ImgView: View {
         }.navigationViewStyle(.stack)
     }
 
-
     func doTxt2Img() {
         selectedIndex = 0
         Task { await generateImage() }
@@ -88,7 +83,7 @@ struct StableTxt2ImgView: View {
     
     func generateImage() async {
         let (promptTemp, negativePromptTemp) = await withCheckedContinuation { continuation in
-            preparePrompts(selectedPromptStyles: viewModel.selectedPromptStyles) { (prompt, negativePrompt) in
+            preparePrompts(selectedPromptStyles: viewModel.txtSelectedPromptStyles) { (prompt, negativePrompt) in
                 continuation.resume(returning: (prompt, negativePrompt))
             }
         }
@@ -104,20 +99,20 @@ struct StableTxt2ImgView: View {
             hr_resize_x: viewModel.txt2imgHrResizeX,
             hr_resize_y: viewModel.txt2imgHrResizeY,
             prompt: promptTemp,
-            styles: viewModel.selectedPromptStyles,
-            seed: viewModel.seed,
+            styles: viewModel.txtSelectedPromptStyles,
+            seed: viewModel.txtSeed,
             subseed: -1,
             subseed_strength: 0.0,
             seed_resize_from_h: 0,
             seed_resize_from_w: 0,
-            sampler_name: viewModel.selectedSampler,
-            batch_size: viewModel.txt2imgBatchCount,
+            sampler_name: viewModel.txtSelectedSampler,
+            batch_size: viewModel.txt2imgBatchSize,
             n_iter: 1,
-            steps: viewModel.steps,
-            cfg_scale: viewModel.cfgScale,
+            steps: viewModel.txtSteps,
+            cfg_scale: viewModel.txtCfgScale,
             width: viewModel.txt2imgWidth,
             height: viewModel.txt2imgHeight,
-            restore_faces: viewModel.restoreFaces,
+            restore_faces: viewModel.txtRestoreFaces,
             tiling: false,
             do_not_save_samples: false,
             do_not_save_grid: false,
@@ -179,8 +174,6 @@ struct StableTxt2ImgView: View {
     }
 }
 
-
-
 struct TxtPromptsSection: View {
     @ObservedObject var viewModel: StableSettingViewModel
     
@@ -209,24 +202,107 @@ struct TxtPromptsSection: View {
             HStack {
                 Text("Styles")
                 Spacer()
-                let first = viewModel.selectedPromptStyles.first
-                let count = viewModel.selectedPromptStyles.count
+                let first = viewModel.txtSelectedPromptStyles.first
+                let count = viewModel.txtSelectedPromptStyles.count
                 let isMoreThanOne = count > 1
                 Text(isMoreThanOne ? "\(count) styles" : first ?? "")
                     .lineLimit(1)
                     .padding(.leading, 20)
-                NavigationLink(destination: StableStyleSelectView(viewModel: viewModel, selectedPromptStyles: $viewModel.selectedPromptStyles, localPromptStyles: $viewModel.localPromptStyles)) {
+                NavigationLink(destination: StableStyleSelectView(viewModel: viewModel, mode: .txt2img, selectedPromptStyles: $viewModel.txtSelectedPromptStyles, localPromptStyles: $viewModel.localPromptStyles)) {
                     EmptyView()
                 }
             }
             
-            Toggle(isOn: $viewModel.restoreFaces) {
+            Toggle(isOn: $viewModel.txtRestoreFaces) {
                 Text("Restore Face")
             }
         }
     }
 }
 
+struct TxtSamplingOptionsSection: View {
+    @ObservedObject var viewModel: StableSettingViewModel
+    @State var isRandomSeed: Bool = false
+    
+    var body: some View {
+        DisclosureGroup("Sampling options") {
+            Picker("Sampler", selection: $viewModel.txtSelectedSampler) {
+                ForEach(viewModel.samplers, id: \.self) { sampler in
+                    Text(sampler).tag(sampler)
+                }
+            }
+
+            StepsPicker(steps: $viewModel.txtSteps)
+            CfgScaleSlider(cfgScale: $viewModel.txtCfgScale)
+            
+            Toggle(isOn: $isRandomSeed.animation()) {
+                Text("Random Seed")
+            }.onChange(of: isRandomSeed) { oldValue, newValue in
+                viewModel.txtSeed = -1
+            }
+            if !isRandomSeed {
+                SeedTextField(seed: $viewModel.txtSeed)
+            }
+        }
+        .onAppear {
+            isRandomSeed = viewModel.txtSeed == -1
+        }
+    }
+}
+
+struct TxtDimensionsSection: View {
+    @ObservedObject var viewModel: StableSettingViewModel
+    
+    var body: some View {
+        HStack {
+            Text("Width")
+            Spacer()
+            TextField("Width", value: $viewModel.txt2imgWidth, formatter: NumberFormatter())
+                .keyboardType(.numbersAndPunctuation)
+                .multilineTextAlignment(.trailing)
+                .frame(width: 100)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+        }
+        
+        HStack {
+            Text("Height")
+            Spacer()
+            TextField("Height", value: $viewModel.txt2imgHeight, formatter: NumberFormatter())
+                .keyboardType(.numbersAndPunctuation)
+                .multilineTextAlignment(.trailing)
+                .frame(width: 100)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+        }
+    }
+}
+
+struct UpscalingSection: View {
+    @ObservedObject var viewModel: StableSettingViewModel
+    
+    var body: some View {
+        Toggle("Upscaling", isOn: $viewModel.txt2imgEnableHR.animation())
+        
+        if viewModel.txt2imgEnableHR {
+            VStack {
+                Picker("Upscaler", selection: $viewModel.txt2imgHrUpscaler) {
+                    ForEach(HiResUpscaler.allCases, id: \.self) { upscaler in
+                        Text(upscaler.rawValue).tag(upscaler)
+                    }
+                }
+                
+                HStack {
+                    Text("Scale")
+                    Spacer()
+                    Text("\(viewModel.txt2imgHrScale, specifier: "%.2f")")
+                }
+                
+                Slider(value: $viewModel.txt2imgHrScale, in: 1...4, step: 0.1)
+                
+                DenoisingStrengthSlider(denoisingStrength: $viewModel.txt2imgDenoisingStrength)
+            }
+        }
+    }
+}
 
 struct TextResultSection: View {
     var parent: StableTxt2ImgView
@@ -261,78 +337,7 @@ struct TextResultSection: View {
                 .tabViewStyle(.page)
                 .frame(height: calculatedHeight)
                 .id(resultSectionId)
-            }                        
-        }
-    }
-}
-
-struct TxtDimensionsSection: View {
-    @ObservedObject var viewModel: StableSettingViewModel
-    
-    var body: some View {
-        HStack {
-            Text("Width")
-            Spacer()
-            TextField("Width", value: $viewModel.txt2imgWidth, formatter: NumberFormatter())
-                .keyboardType(.numbersAndPunctuation)
-                .multilineTextAlignment(.trailing)
-                .frame(width: 100)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-        }
-        
-        HStack {
-            Text("Height")
-            Spacer()
-            TextField("Height", value: $viewModel.txt2imgHeight, formatter: NumberFormatter())
-                .keyboardType(.numbersAndPunctuation)
-                .multilineTextAlignment(.trailing)
-                .frame(width: 100)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-        }
-    }
-}
-
-
-struct UpscalingSection: View {
-    @ObservedObject var viewModel: StableSettingViewModel
-    
-    var body: some View {
-        Toggle("Upscaling", isOn: $viewModel.txt2imgEnableHR.animation())
-        
-        if viewModel.txt2imgEnableHR {
-            VStack {
-                HStack {
-                    Text("Scale")
-                    Spacer()
-                    Text("\(viewModel.txt2imgHrScale, specifier: "%.2f")")
-                }
-                Slider(value: $viewModel.txt2imgHrScale, in: 1...4, step: 0.1)
-                
-                Picker("Upscaler", selection: $viewModel.txt2imgHrUpscaler) {
-                    ForEach(HiResUpscaler.allCases, id: \.self) { upscaler in
-                        Text(upscaler.rawValue).tag(upscaler)
-                    }
-                }
-                
-                HStack {
-                    Text("Second Pass Steps")
-                    Spacer()
-                    TextField("Steps", value: $viewModel.txt2imgHrSecondPassSteps, formatter: NumberFormatter())
-                        .keyboardType(.numbersAndPunctuation)
-                        .multilineTextAlignment(.trailing)
-                        .frame(width: 100)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                }
-                
-                DenoisingStrengthSlider(denoisingStrength: $viewModel.txt2imgDenoisingStrength)
             }
         }
-    
-    }
-}
-
-extension HiResUpscaler: CaseIterable {
-    public static var allCases: [HiResUpscaler] {
-        return [.none, .latent, .latentAntialiased, .latentBicubic, .latentBicubicAntialiased, .latentNearest, .latentNearestExact, .lanczos, .nearest, .esrgan4x, .ldsr, .scunetGAN, .scunetPSNR, .swinIR4x]
     }
 }

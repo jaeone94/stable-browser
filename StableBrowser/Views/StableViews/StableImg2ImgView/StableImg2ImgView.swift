@@ -35,12 +35,8 @@ struct StableImg2ImgView: View {
     @State internal var canInject: Bool = false
 
     // For Generate Image
-    @State private var isInpaintMode: Bool = true
     @State internal var resizeScale: Double = 1
-    @State internal var prompt: String = ""
-    @State internal var negativePrompt: String = ""
     @State private var batchCount: Int = 1
-    @State private var localStyles: [LocalPromptStyle]?
     
     @State private var isConnected = false
     
@@ -56,31 +52,14 @@ struct StableImg2ImgView: View {
         case noMaskImage // Inpaint mode without mask image
     }
     
-    
-    func importBaseImage(baseImage: UIImage) {
-        self.width = baseImage.size.width
-        self.height = baseImage.size.height
-        self.baseImage = baseImage
-        DispatchQueue.main.async {
-            self.isImageTooLarge() {
-                rst in
-                if rst {
-                    self.resizeImage()
-                    self.alertType = .resize
-                    self.showAlert = true
-                }
-            }
-        }
-    }
-    
     var body: some View {
         ZStack {
             NavigationView {
                 Form {
-                    BaseImageSection(parent: self, baseImage: $baseImage, maskImage: $maskImage, resizeScale: $resizeScale, width: $width, height: $height, isInpaintMode: $isInpaintMode, uploadImageSheetVisible: $uploadImagePopupVisible)
+                    BaseImageSection(parent: self, baseImage: $baseImage, maskImage: $maskImage, resizeScale: $resizeScale, width: $width, height: $height, isInpaintMode: $viewModel.isInpaintMode, uploadImageSheetVisible: $uploadImagePopupVisible)
                     
                     if isConnected {
-                        Img2ImgModeSection(isInpaintMode: $isInpaintMode, viewModel: viewModel)
+                        Img2ImgModeSection(isInpaintMode: $viewModel.isInpaintMode, viewModel: viewModel)
                         GenerateOptionsSection(parent: self, viewModel: viewModel)
                         
                         Section("IMG2IMG GENERATE") {
@@ -90,7 +69,8 @@ struct StableImg2ImgView: View {
                                 Text("Batch Size: \(batchCount)")
                             }
                         }
-                    }else {
+                        
+                    } else {
                         // Server connection required
                         Section(header: Text("Server connection required")) {
                             NavigationLink(destination: ServerConnectionView()) {
@@ -130,13 +110,12 @@ struct StableImg2ImgView: View {
                 }
                 .onAppear (perform : UIApplication.shared.hideKeyboard)
                 .onDisappear{
-                    viewModel.isInpaintMode = isInpaintMode
-                    saveSettingsToViewModel()
+                    viewModel.saveCurrentSettings()
                 }
                 .alert(isPresented: $showAlert) {
                     switch alertType {
                     case .resize:
-                        return Alert(title: Text("Image resized"), message: Text("The image has been automatically resized to \(Int(width * baseImage.scale)) x \(Int(height * baseImage.scale)) for improve perfomance."), dismissButton: .default(Text("OK")))
+                        return Alert(title: Text("Image resized"), message: Text("The image has been automatically resized to \(Int(width * baseImage.scale)) x \(Int(height * baseImage.scale)) for improve performance."), dismissButton: .default(Text("OK")))
                     case .noMaskImage:
                         return Alert(title: Text("No Mask Image"), message: Text("Mask image is required in inpaint mode. Please make mask image in 'Edit Image' menu"), dismissButton: .default(Text("OK")))
                     }
@@ -144,8 +123,6 @@ struct StableImg2ImgView: View {
                     if browserViewModel.imageId != nil {
                         canInject = true
                     }
-                    
-                    self.isInpaintMode = viewModel.isInpaintMode
                 }
             
             ZStack {
@@ -163,15 +140,23 @@ struct StableImg2ImgView: View {
             .transition(.move(edge: .bottom).combined(with: .opacity))
             .animation(.easeInOut, value: uploadImagePopupVisible)
         }
-        .onChange(of: viewModel.baseImageFromResult) { oldValue, newValue in
-            if newValue.size.width != 0 {
-                self.importBaseImage(baseImage: newValue)
-                self.maskImage = nil
-                self.resizeScale = 1
+    }
+    
+    func importBaseImage(baseImage: UIImage) {
+        self.width = baseImage.size.width
+        self.height = baseImage.size.height
+        self.baseImage = baseImage
+        DispatchQueue.main.async {
+            self.isImageTooLarge() {
+                rst in
+                if rst {
+                    self.resizeImage()
+                    self.alertType = .resize
+                    self.showAlert = true
+                }
             }
         }
     }
-        
 
     func InjectImage() {
         OverlayService.shared.showOverlaySpinner()
@@ -180,19 +165,16 @@ struct StableImg2ImgView: View {
             browserViewModel.imageForInject = resultImages[selectedIndex].image
         }
     }
-
  
     func doImg2Img() {
-        saveSettingsToViewModel()
-        
         // Inpaint mode without mask image
-        if isInpaintMode && maskImage == nil {
+        if viewModel.isInpaintMode && maskImage == nil {
             alertType = .noMaskImage
             showAlert = true
             return
         }
 
-        if isInpaintMode {
+        if viewModel.isInpaintMode {
             if let maskImage = self.maskImage{
                 let resizedMaskImage = maskImage.resizeTargetImageToMatchSource(src: baseImage)
                 if let croppedBaseImage = baseImage.cropToNearest8Multiple(),
@@ -205,19 +187,15 @@ struct StableImg2ImgView: View {
 
         selectedIndex = 0
         Task { await generateImage() }
-                
     }
     
     func generateImage() async {
         let sizeInPixels = convertCGSizeToPixel(size: baseImage.size, resizeScale: CGFloat(resizeScale))
-        print(sizeInPixels)
         let intWidth = Int(sizeInPixels.width)
         let intHeight = Int(sizeInPixels.height)
 
-        let selectedPromptStyles = viewModel.selectedPromptStyles // [String]
-            
         let (promptTemp, negativePromptTemp) = await withCheckedContinuation { continuation in
-                preparePrompts(selectedPromptStyles: selectedPromptStyles) { (prompt, negativePrompt) in
+                preparePrompts(selectedPromptStyles: viewModel.imgSelectedPromptStyles) { (prompt, negativePrompt) in
                     continuation.resume(returning: (prompt, negativePrompt))
                 }
             }
@@ -239,42 +217,42 @@ struct StableImg2ImgView: View {
         ]
                 
         let imgContext = Img2ImgGenerationContext(
-            mode: isInpaintMode ? .inpaint : .normal
-           , initImages: [baseImage]
-           , mask: maskImage
-           , maskBlur: viewModel.maskBlur
-           , inpaintingFill: viewModel.inpaintingFill
-           , inpaintFullRes: viewModel.inpaintFullRes != 0
-           , inpaintFullResPadding: viewModel.inpaintFullResPadding
-           , inpaintingMaskInvert: viewModel.maskInvert
-           , resizeMode: viewModel.resizeMode
-           , denoisingStrength: viewModel.denoisingStrength
-           , prompt: promptTemp
-           , negativePrompt: negativePromptTemp
-           , styles: []
-           , seed: viewModel.seed
-           , samplerName: viewModel.selectedSampler
-           , batchSize: batchCount
-           , steps: viewModel.steps
-           , cfgScale: viewModel.cfgScale
-           , width: intWidth
-           , height: intHeight
-           , overrideSettings: [
-            "sd_model_checkpoint": viewModel.selectedSDModel,
-            "CLIP_stop_at_last_layers": viewModel.clipSkip,
-            "sd_vae": viewModel.selectedSdVae
-           ]
-           , sendImages: true
-           , saveImages: false
-           , alwaysonScripts: viewModel.isInpaintMode && viewModel.softInpainting ? alwaysonScripts : [:]
+            mode: viewModel.isInpaintMode ? .inpaint : .normal,
+            initImages: [baseImage],
+            mask: maskImage,
+            maskBlur: viewModel.maskBlur,
+            inpaintingFill: viewModel.inpaintingFill,
+            inpaintFullRes: viewModel.inpaintFullRes != 0,
+            inpaintFullResPadding: viewModel.inpaintFullResPadding,
+            inpaintingMaskInvert: viewModel.maskInvert,
+            resizeMode: viewModel.resizeMode,
+            denoisingStrength: viewModel.denoisingStrength,
+            prompt: promptTemp,
+            negativePrompt: negativePromptTemp,
+            styles: [],
+            seed: viewModel.imgSeed,
+            samplerName: viewModel.imgSelectedSampler,
+            batchSize: batchCount,
+            steps: viewModel.imgSteps,
+            cfgScale: viewModel.imgCfgScale,
+            width: intWidth,
+            height: intHeight,
+            overrideSettings: [
+                "sd_model_checkpoint": viewModel.selectedSDModel,
+                "CLIP_stop_at_last_layers": viewModel.clipSkip,
+                "sd_vae": viewModel.selectedSdVae
+            ],
+            sendImages: true,
+            saveImages: false,
+            alwaysonScripts: viewModel.isInpaintMode && viewModel.softInpainting ? alwaysonScripts : [:]
         )
         
-        ContextQueueManager.shared.addContext(imgContext)        
+        ContextQueueManager.shared.addContext(imgContext)
     }
     
     func preparePrompts(selectedPromptStyles: [String], completion: @escaping (String, String) -> Void) {
-        var promptTemp = self.prompt
-        var negativePromptTemp = self.negativePrompt
+        var promptTemp = viewModel.imgPrompt
+        var negativePromptTemp = viewModel.imgNegativePrompt
                 
         DispatchQueue.main.async {
             let realm = try! Realm()
@@ -308,15 +286,6 @@ struct StableImg2ImgView: View {
         return CGSize(width: Int(size.width * resizeScale * baseImage.scale), height: Int(size.height * resizeScale * baseImage.scale))
     }
     
-    func updateSettingsFromViewModel() {
-        // Update @State properties from ViewModel
-    }
-    
-    func saveSettingsToViewModel() {
-        // Save @State properties to ViewModel
-        viewModel.saveCurrentSettings()
-    }
-    
     func isImageTooLarge(completion: @escaping (Bool) -> Void) {
         // get image size in pixels
         let sizeInPixels = convertCGSizeToPixel(size: baseImage.size, resizeScale: 1)
@@ -334,11 +303,7 @@ struct StableImg2ImgView: View {
         // get the scale to resize the image
         let scale = maxImageSize / maxPixel
         
-        print(baseImage.scale)
-        
         // get the target size of the image
-        // calculate the target size
-        _ = UIScreen.main.scale
         let targetSize = CGSize(width: baseImage.size.width * scale, height: baseImage.size.height * scale)
         
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: targetSize.width, height: targetSize.height))
@@ -349,26 +314,6 @@ struct StableImg2ImgView: View {
         importBaseImage(baseImage: resizedImage)
     }
 }
-
-
-
-struct GenerateImageButton: View {
-//    var parent: BrowserView
-    @Binding var batchCount: Int
-    var doGenerate: () -> Void
-    
-    var body: some View {
-        VStack {
-            HStack {
-                Button("Generate Image") {
-                    doGenerate()
-                }.font(.title3).foregroundColor(.accentColor)
-                Spacer()
-            }            
-        }
-    }
-}
-
 
 struct Img2ImgModeSection: View {
     @Binding var isInpaintMode: Bool
@@ -462,9 +407,6 @@ struct PromptsSection: View {
     var parent: GenerateOptionsSection
     @ObservedObject var viewModel: StableSettingViewModel
     
-    @State var prompt: String = ""
-    @State var negativePrompt: String = ""
-    
     var body: some View {
         DisclosureGroup("Prompts") {
             VStack(alignment: .leading){
@@ -472,52 +414,41 @@ struct PromptsSection: View {
                     Text("Prompt")
                     Spacer()
                 }
-                TextEditor(text: $prompt)
+                TextEditor(text: $viewModel.imgPrompt)
                     .frame(height: 100)
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-                    .onChange(of: prompt) {
-                        oldValue, newValue in
-                        parent.parent.prompt = newValue
-                    }
             }
             
             VStack(alignment: .leading){
                 HStack {
                     Text("Negative Prompt")
                     Spacer()
-                }                
-                TextEditor(text: $negativePrompt)
+                }
+                TextEditor(text: $viewModel.imgNegativePrompt)
                     .frame(height: 100)
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-                    .onChange(of: negativePrompt) {
-                        oldValue, newValue in
-                        parent.parent.negativePrompt = newValue
-                    }
             }
             
             HStack {
                 Text("Styles")
                 Spacer()
-                let first = viewModel.selectedPromptStyles.first
-                let count = viewModel.selectedPromptStyles.count
+                let first = viewModel.imgSelectedPromptStyles.first
+                let count = viewModel.imgSelectedPromptStyles.count
                 let isMoreThanOne = count > 1
                 Text(isMoreThanOne ? "\(count) styles" : first ?? "")
                     .lineLimit(1)
                     .padding(.leading, 20)
-                NavigationLink(destination: StableStyleSelectView(viewModel: viewModel, selectedPromptStyles: $viewModel.selectedPromptStyles, localPromptStyles: $viewModel.localPromptStyles)) {
+                NavigationLink(destination: StableStyleSelectView(viewModel: viewModel, mode: .img2img, selectedPromptStyles: $viewModel.imgSelectedPromptStyles, localPromptStyles: $viewModel.localPromptStyles)) {
                     EmptyView()
                 }
             }
             
-            
-            // restore Face Toggle button
-            Toggle(isOn: $viewModel.restoreFaces) {
+            Toggle(isOn: $viewModel.imgRestoreFaces) {
                 Text("Restore Face")
             }
         }
     }
 }
-
 
 struct SamplingOptionsSection: View {
     @ObservedObject var viewModel: StableSettingViewModel
@@ -525,34 +456,46 @@ struct SamplingOptionsSection: View {
     
     var body: some View {
         DisclosureGroup("Sampling options") {
-            NavigationLink(destination: SamplerSettingView(parent: self, title: "Samplers", sampler: viewModel.selectedSampler, key: "samplers")) {
-                HStack {
-                    Text("Sampler")
-                    Spacer()
-                    Text(viewModel.selectedSampler)
-                        .lineLimit(1)
-                        .padding(.leading, 20)
+            Picker("Sampler", selection: $viewModel.imgSelectedSampler) {
+                ForEach(viewModel.samplers, id: \.self) { sampler in
+                    Text(sampler).tag(sampler)
                 }
             }
 
 
-            StepsPicker(steps: $viewModel.steps)
+            StepsPicker(steps: $viewModel.imgSteps)
             ResizeModePicker(resizeMode: $viewModel.resizeMode)
-            CfgScaleSlider(cfgScale: $viewModel.cfgScale)
+            CfgScaleSlider(cfgScale: $viewModel.imgCfgScale)
             DenoisingStrengthSlider(denoisingStrength: $viewModel.denoisingStrength)
-            // Toggle button for random seed, when the toggle button is on, set the seed to -1, otherwise, use a TextField to input the seed
+            
             Toggle(isOn: $isRandomSeed.animation()) {
                 Text("Random Seed")
-            }.onChange(of: isRandomSeed) {
-                oldValue, newValue in
-                    viewModel.seed = -1
+            }.onChange(of: isRandomSeed) { oldValue, newValue in
+                viewModel.imgSeed = -1
             }
             if !isRandomSeed {
-                SeedTextField(seed: $viewModel.seed)
+                SeedTextField(seed: $viewModel.imgSeed)
             }
         }
         .onAppear {
-            isRandomSeed = viewModel.seed == -1
+            isRandomSeed = viewModel.imgSeed == -1
+        }
+    }
+}
+
+
+struct GenerateImageButton: View {
+    @Binding var batchCount: Int
+    var doGenerate: () -> Void
+    
+    var body: some View {
+        VStack {
+            HStack {
+                Button("Generate Image") {
+                    doGenerate()
+                }.font(.title3).foregroundColor(.accentColor)
+                Spacer()
+            }
         }
     }
 }

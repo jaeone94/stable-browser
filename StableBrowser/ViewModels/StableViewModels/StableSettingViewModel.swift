@@ -3,7 +3,7 @@ import RealmSwift
 
 class StableSettingViewModel : ObservableObject {
     static let shared = StableSettingViewModel()
-    
+        
     var webUIApi: WebUIApi?
     @Published var isConnected : Bool?
     
@@ -17,18 +17,56 @@ class StableSettingViewModel : ObservableObject {
     @Published var loras: [String] = []
     @Published var embeddings: [String] = []
 
-    // Image generate properties
+    // Common Image generate properties
     @Published var selectedSDModel: String = ""
     @Published var clipSkip: Int = 1
     @Published var selectedSdVae: String = "Automatic"
-    @Published var selectedPromptStyles: [String] = []
-    @Published var selectedSampler: String = ""
-    @Published var steps: Int = 20
-    @Published var cfgScale: Double = 7.5
+    
+    // Txt2Img specific properties
+    @Published var txtSelectedPromptStyles: [String] = []
+    @Published var txtSelectedSampler: String = "Euler a"
+    @Published var txtSteps: Int = 20
+    @Published var txtCfgScale: Double = 7.5
+    @Published var txtSeed: Int = -1
+    @Published var txtRestoreFaces: Bool = false
+    @Published var txt2imgPrompt: String = ""
+    @Published var txt2imgNegativePrompt: String = ""
+    @Published var txt2imgBatchSize: Int = 1
+    @Published var txt2imgWidth: Int = 512
+    @Published var txt2imgHeight: Int = 512
+    @Published var txt2imgDenoisingStrength: Double = 0.7
+    @Published var txt2imgEnableHR: Bool = false
+    @Published var txt2imgHrScale: Double = 2.0
+    @Published var txt2imgHrUpscaler: HiResUpscaler = .latent
+    @Published var txt2imgHrSecondPassSteps: Int = 0
+    @Published var txt2imgHrResizeX: Int = 0
+    @Published var txt2imgHrResizeY: Int = 0
+    
+    // Img2Img specific properties
+    @Published var imgSelectedPromptStyles: [String] = []
+    @Published var imgSelectedSampler: String = "Euler a"
+    @Published var imgSteps: Int = 20
+    @Published var imgCfgScale: Double = 7.5
+    @Published var imgSeed: Int = -1
+    @Published var imgRestoreFaces: Bool = false
+    @Published var imgPrompt: String = ""
+    @Published var imgNegativePrompt: String = ""
+    @Published var width: CGFloat = 0
+    @Published var height: CGFloat = 0
     @Published var resizeMode: Int = 0
     @Published var denoisingStrength: Double = 0.5
-    @Published var seed: Int = -1
-    @Published var restoreFaces: Bool = false
+    
+    // Inpaint properties
+    @Published var isInpaintMode: Bool = false
+    @Published var maskBlur: Int = 2
+    @Published var inpaintingFill: Int = 1
+    @Published var maskInvert: Int = 0
+    @Published var inpaintFullRes: Int = 0
+    @Published var inpaintFullResPadding: Int = 32
+    @Published var softInpainting: Bool = false
+    @Published var scheduleBias: Double = 1.0
+    @Published var preservationStrength: Double = 0.5
+    @Published var transitionContrastBoost: Double = 4.0
     
     // Img2Img properties
     @Published var baseImage: UIImage = UIImage() {
@@ -46,22 +84,6 @@ class StableSettingViewModel : ObservableObject {
         }
     }
     
-    @Published var width: CGFloat = 0
-    @Published var height: CGFloat = 0
-
-    // Inpaint properties
-    @Published var isInpaintMode: Bool = false
-    @Published var maskBlur: Int = 2
-    @Published var inpaintingFill: Int = 1 // 0: original, 1: fill
-    @Published var maskInvert: Int = 0 // 0: inpaint masked, 1: inpaint not masked
-    @Published var inpaintFullRes: Int = 0 // 0: whole picture, 1: only masked
-    @Published var inpaintFullResPadding: Int = 32 // only masked padding pixels    
-    
-    @Published var softInpainting: Bool = false
-    @Published var scheduleBias: Double = 1.0
-    @Published var preservationStrength: Double = 0.5
-    @Published var transitionContrastBoost: Double = 4.0
-
     // maximum image size (width or height, whichever is larger)
     @Published var maxImageSize: Int = -1
     var maxImageSizeEnabled: Bool {
@@ -69,20 +91,6 @@ class StableSettingViewModel : ObservableObject {
             return maxImageSize > 0
         }
     }
-    
-    // Txt2Img specific properties
-    @Published var txt2imgPrompt: String = ""
-    @Published var txt2imgNegativePrompt: String = ""
-    @Published var txt2imgBatchCount: Int = 1
-    @Published var txt2imgWidth: Int = 512
-    @Published var txt2imgHeight: Int = 512
-    @Published var txt2imgDenoisingStrength: Double = 0.7
-    @Published var txt2imgEnableHR: Bool = false
-    @Published var txt2imgHrScale: Double = 2.0
-    @Published var txt2imgHrUpscaler: HiResUpscaler = .latent
-    @Published var txt2imgHrSecondPassSteps: Int = 0
-    @Published var txt2imgHrResizeX: Int = 0
-    @Published var txt2imgHrResizeY: Int = 0
 
     // ResultImages
     @Published var txt2imgResultImages: [ResultImage] = []
@@ -141,101 +149,149 @@ class StableSettingViewModel : ObservableObject {
   
     public func saveCurrentSettings() {
         if isConnected ?? false {
-            saveSampler()
-            saveSteps()
-            saveCfgScale()
-            saveDenoisingStrength()
-            saveResizeMode()
-            saveSeed()
-            saveSelectedPromptStyles()
-            saveMaskBlur()
-            saveInpaintingFill()
-            saveMaskInvert()
-            saveInpaintFullRes()
-            saveInpaintFullResPadding()
-            saveClipSkip()
-            saveSdVae()
-            saveRestoreFaces()
-            saveLocalPromptStyles()
-            saveIsInpaintMode()
+            saveCommonSettings()
             saveTxt2ImgSettings()
-            saveSoftInpaintingSettings()
+            saveImg2ImgSettings()
         }
     }
 
     public func loadCurrentSettings() {
         loadLastUrl()
-        loadSampler()
-        loadSteps()
-        loadCfgScale()
-        loadDenoisingStrength()
-        loadResizeMode()
-        loadSeed()
-        loadSelectedPromptStyles()
-        loadMaskBlur()
-        loadInpaintingFill()
-        loadMaskInvert()
-        loadInpaintFullRes()
-        loadInpaintFullResPadding()
-        loadClipSkip()
-        loadSdVae()
-        loadRestoreFaces()
-        loadLocalPromptStyles()
-        loadIsInpaintMode()
+        loadCommonSettings()
         loadTxt2ImgSettings()
-        loadSoftInpaintingSettings()
+        loadImg2ImgSettings()
     }
-    
+
+    private func saveCommonSettings() {
+        let realm = try! Realm()
+        try! realm.write {
+            if let setting = realm.objects(StableSettings.self).first {
+                setting.clipSkip = self.clipSkip
+                setting.selectedSdVae = self.selectedSdVae
+                setting.localPromptStyles.removeAll()
+                setting.localPromptStyles.append(objectsIn: self.localPromptStyles)
+            } else {
+                let newSetting = StableSettings()
+                newSetting.clipSkip = self.clipSkip
+                newSetting.selectedSdVae = self.selectedSdVae
+                newSetting.localPromptStyles.append(objectsIn: self.localPromptStyles)
+                realm.add(newSetting)
+            }
+        }
+    }
+
     private func saveTxt2ImgSettings() {
         let realm = try! Realm()
         try! realm.write {
             if let setting = realm.objects(StableSettings.self).first {
-                setting.txt2imgPrompt = txt2imgPrompt
-                setting.txt2imgNegativePrompt = txt2imgNegativePrompt
-                setting.txt2imgBatchCount = txt2imgBatchCount
-                setting.txt2imgWidth = txt2imgWidth
-                setting.txt2imgHeight = txt2imgHeight
-                setting.txt2imgDenoisingStrength = txt2imgDenoisingStrength
-                setting.txt2imgEnableHR = txt2imgEnableHR
-                setting.txt2imgHrScale = txt2imgHrScale
-                setting.txt2imgHrUpscaler = txt2imgHrUpscaler.rawValue
-                setting.txt2imgHrSecondPassSteps = txt2imgHrSecondPassSteps
-                setting.txt2imgHrResizeX = txt2imgHrResizeX
-                setting.txt2imgHrResizeY = txt2imgHrResizeY
-            } else {
-                let newSetting = StableSettings()
-                newSetting.txt2imgPrompt = txt2imgPrompt
-                newSetting.txt2imgNegativePrompt = txt2imgNegativePrompt
-                newSetting.txt2imgBatchCount = txt2imgBatchCount
-                newSetting.txt2imgWidth = txt2imgWidth
-                newSetting.txt2imgHeight = txt2imgHeight
-                newSetting.txt2imgDenoisingStrength = txt2imgDenoisingStrength
-                newSetting.txt2imgEnableHR = txt2imgEnableHR
-                newSetting.txt2imgHrScale = txt2imgHrScale
-                newSetting.txt2imgHrUpscaler = txt2imgHrUpscaler.rawValue
-                newSetting.txt2imgHrSecondPassSteps = txt2imgHrSecondPassSteps
-                newSetting.txt2imgHrResizeX = txt2imgHrResizeX
-                newSetting.txt2imgHrResizeY = txt2imgHrResizeY
-                realm.add(newSetting)
+                setting.txtSelectedSampler = self.txtSelectedSampler
+                setting.txtSteps = self.txtSteps
+                setting.txtCfgScale = self.txtCfgScale
+                setting.txtSeed = self.txtSeed
+                setting.txtRestoreFaces = self.txtRestoreFaces
+                setting.txtSelectedPromptStyles.removeAll()
+                setting.txtSelectedPromptStyles.append(objectsIn: self.txtSelectedPromptStyles)
+                setting.txt2imgPrompt = self.txt2imgPrompt
+                setting.txt2imgNegativePrompt = self.txt2imgNegativePrompt
+                setting.txt2imgBatchCount = self.txt2imgBatchSize
+                setting.txt2imgWidth = self.txt2imgWidth
+                setting.txt2imgHeight = self.txt2imgHeight
+                setting.txt2imgDenoisingStrength = self.txt2imgDenoisingStrength
+                setting.txt2imgEnableHR = self.txt2imgEnableHR
+                setting.txt2imgHrScale = self.txt2imgHrScale
+                setting.txt2imgHrUpscaler = self.txt2imgHrUpscaler.rawValue
+                setting.txt2imgHrSecondPassSteps = self.txt2imgHrSecondPassSteps
+                setting.txt2imgHrResizeX = self.txt2imgHrResizeX
+                setting.txt2imgHrResizeY = self.txt2imgHrResizeY
             }
+        }
+    }
+
+    private func saveImg2ImgSettings() {
+        let realm = try! Realm()
+        try! realm.write {
+            if let setting = realm.objects(StableSettings.self).first {
+                setting.imgSelectedSampler = self.imgSelectedSampler
+                setting.imgSteps = self.imgSteps
+                setting.imgCfgScale = self.imgCfgScale
+                setting.imgSeed = self.imgSeed
+                setting.imgRestoreFaces = self.imgRestoreFaces
+                setting.imgSelectedPromptStyles.removeAll()
+                setting.imgSelectedPromptStyles.append(objectsIn: self.imgSelectedPromptStyles)
+                setting.imgPrompt = self.imgPrompt
+                setting.imgNegativePrompt = self.imgNegativePrompt
+                setting.resizeMode = self.resizeMode
+                setting.denoisingStrength = self.denoisingStrength
+                setting.isInpaintMode = self.isInpaintMode
+                setting.maskBlur = self.maskBlur
+                setting.inpaintingFill = self.inpaintingFill
+                setting.maskInvert = self.maskInvert
+                setting.inpaintFullRes = self.inpaintFullRes
+                setting.inpaintFullResPadding = self.inpaintFullResPadding
+                setting.softInpainting = self.softInpainting
+                setting.scheduleBias = self.scheduleBias
+                setting.preservationStrength = self.preservationStrength
+                setting.transitionContrastBoost = self.transitionContrastBoost
+            }
+        }
+    }
+
+    private func loadCommonSettings() {
+        let realm = try! Realm()
+        if let setting = realm.objects(StableSettings.self).first {
+            self.clipSkip = setting.clipSkip
+            self.selectedSdVae = setting.selectedSdVae
+            self.localPromptStyles = Array(setting.localPromptStyles)
         }
     }
 
     private func loadTxt2ImgSettings() {
         let realm = try! Realm()
         if let setting = realm.objects(StableSettings.self).first {
-            txt2imgPrompt = setting.txt2imgPrompt
-            txt2imgNegativePrompt = setting.txt2imgNegativePrompt
-            txt2imgBatchCount = setting.txt2imgBatchCount
-            txt2imgWidth = setting.txt2imgWidth
-            txt2imgHeight = setting.txt2imgHeight
-            txt2imgDenoisingStrength = setting.txt2imgDenoisingStrength
-            txt2imgEnableHR = setting.txt2imgEnableHR
-            txt2imgHrScale = setting.txt2imgHrScale
-            txt2imgHrUpscaler = HiResUpscaler(rawValue: setting.txt2imgHrUpscaler) ?? .latent
-            txt2imgHrSecondPassSteps = setting.txt2imgHrSecondPassSteps
-            txt2imgHrResizeX = setting.txt2imgHrResizeX
-            txt2imgHrResizeY = setting.txt2imgHrResizeY
+            self.txtSelectedSampler = setting.txtSelectedSampler
+            self.txtSteps = setting.txtSteps
+            self.txtCfgScale = setting.txtCfgScale
+            self.txtSeed = setting.txtSeed
+            self.txtRestoreFaces = setting.txtRestoreFaces
+            self.txtSelectedPromptStyles = Array(setting.txtSelectedPromptStyles)
+            self.txt2imgPrompt = setting.txt2imgPrompt
+            self.txt2imgNegativePrompt = setting.txt2imgNegativePrompt
+            self.txt2imgBatchSize = setting.txt2imgBatchCount
+            self.txt2imgWidth = setting.txt2imgWidth
+            self.txt2imgHeight = setting.txt2imgHeight
+            self.txt2imgDenoisingStrength = setting.txt2imgDenoisingStrength
+            self.txt2imgEnableHR = setting.txt2imgEnableHR
+            self.txt2imgHrScale = setting.txt2imgHrScale
+            self.txt2imgHrUpscaler = HiResUpscaler(rawValue: setting.txt2imgHrUpscaler) ?? .latent
+            self.txt2imgHrSecondPassSteps = setting.txt2imgHrSecondPassSteps
+            self.txt2imgHrResizeX = setting.txt2imgHrResizeX
+            self.txt2imgHrResizeY = setting.txt2imgHrResizeY
+        }
+    }
+
+    private func loadImg2ImgSettings() {
+        let realm = try! Realm()
+        if let setting = realm.objects(StableSettings.self).first {
+            self.imgSelectedSampler = setting.imgSelectedSampler
+            self.imgSteps = setting.imgSteps
+            self.imgCfgScale = setting.imgCfgScale
+            self.imgSeed = setting.imgSeed
+            self.imgRestoreFaces = setting.imgRestoreFaces
+            self.imgSelectedPromptStyles = Array(setting.imgSelectedPromptStyles)
+            self.imgPrompt = setting.imgPrompt
+            self.imgNegativePrompt = setting.imgNegativePrompt
+            self.resizeMode = setting.resizeMode
+            self.denoisingStrength = setting.denoisingStrength
+            self.isInpaintMode = setting.isInpaintMode
+            self.maskBlur = setting.maskBlur
+            self.inpaintingFill = setting.inpaintingFill
+            self.maskInvert = setting.maskInvert
+            self.inpaintFullRes = setting.inpaintFullRes
+            self.inpaintFullResPadding = setting.inpaintFullResPadding
+            self.softInpainting = setting.softInpainting
+            self.scheduleBias = setting.scheduleBias
+            self.preservationStrength = setting.preservationStrength
+            self.transitionContrastBoost = setting.transitionContrastBoost
         }
     }
 
@@ -338,11 +394,6 @@ class StableSettingViewModel : ObservableObject {
             }
         }
     }
-    
-    func setSampler(sampler: String) {
-        self.selectedSampler = sampler
-        saveSampler()
-    }
 
 
     func setServer(url: String) {
@@ -400,85 +451,158 @@ class StableSettingViewModel : ObservableObject {
 
     public func deletePromptStyle(_ name: String) {
         localPromptStyles.removeAll { $0.name == name }
-        if selectedPromptStyles.contains(name) {
-            selectedPromptStyles.removeAll { $0 == name }
+        if txtSelectedPromptStyles.contains(name) {
+            txtSelectedPromptStyles.removeAll { $0 == name }
+        }
+        if imgSelectedPromptStyles.contains(name) {
+            imgSelectedPromptStyles.removeAll { $0 == name }
         }
         saveLocalPromptStyles()
     }    
 
     public func deletePromptStyle(index: Int) {
         localPromptStyles.remove(at: index)
-        if selectedPromptStyles.contains(localPromptStyles[index].name ?? "") {
-            selectedPromptStyles.removeAll { $0 == localPromptStyles[index].name }
+        if txtSelectedPromptStyles.contains(localPromptStyles[index].name ?? "") {
+            txtSelectedPromptStyles.removeAll { $0 == localPromptStyles[index].name }
+        }
+        if imgSelectedPromptStyles.contains(localPromptStyles[index].name ?? "") {
+            imgSelectedPromptStyles.removeAll { $0 == localPromptStyles[index].name }
         }
         saveLocalPromptStyles()
     }    
 
-    public func saveSampler() {
+    public func saveTxtSampler() {
         let realm = try! Realm()
         try! realm.write {
             // Check if there is an existing setting and update it or create a new one
             if let setting = realm.objects(StableSettings.self).first {
-                setting.selectedSampler = self.selectedSampler
+                setting.txtSelectedSampler = self.txtSelectedSampler
             } else {
                 let newSetting = StableSettings()
-                newSetting.selectedSampler = self.selectedSampler
+                newSetting.txtSelectedSampler = self.txtSelectedSampler
                 realm.add(newSetting)
             }
         }
     }
 
-    private func loadSampler() {
+    private func loadTxtSampler() {
         let realm = try! Realm()
         if let setting = realm.objects(StableSettings.self).first {
-            self.selectedSampler = setting.selectedSampler
+            self.txtSelectedSampler = setting.txtSelectedSampler
         } else {
-            self.selectedSampler = "Euler a" // Default value
+            self.txtSelectedSampler = "Euler a" // Default value
+        }
+    }
+    
+    public func saveImgSampler() {
+        let realm = try! Realm()
+        try! realm.write {
+            // Check if there is an existing setting and update it or create a new one
+            if let setting = realm.objects(StableSettings.self).first {
+                setting.imgSelectedSampler = self.imgSelectedSampler
+            } else {
+                let newSetting = StableSettings()
+                newSetting.imgSelectedSampler = self.imgSelectedSampler
+                realm.add(newSetting)
+            }
+        }
+    }
+
+    private func loadImgSampler() {
+        let realm = try! Realm()
+        if let setting = realm.objects(StableSettings.self).first {
+            self.imgSelectedSampler = setting.imgSelectedSampler
+        } else {
+            self.imgSelectedSampler = "Euler a" // Default value
         }
     }
 
     // steps
-    func saveSteps() {
+    func saveTxtSteps() {
         let realm = try! Realm()
         try! realm.write {
             if let setting = realm.objects(StableSettings.self).first {
-                setting.steps = self.steps
+                setting.txtSteps = self.txtSteps
             } else {
                 let newSetting = StableSettings()
-                newSetting.steps = self.steps
+                newSetting.txtSteps = self.txtSteps
                 realm.add(newSetting)
             }
         }
     }
 
-    func loadSteps() {
+    func loadTxtSteps() {
         let realm = try! Realm()
         if let setting = realm.objects(StableSettings.self).first {
-            self.steps = setting.steps
+            self.txtSteps = setting.txtSteps
         } else {
-            self.steps = 25 // Default value
+            self.txtSteps = 25 // Default value
         }
     }
-
-    func saveCfgScale() {
+    
+    func saveImgSteps() {
         let realm = try! Realm()
         try! realm.write {
             if let setting = realm.objects(StableSettings.self).first {
-                setting.cfgScale = self.cfgScale
+                setting.imgSteps = self.imgSteps
             } else {
                 let newSetting = StableSettings()
-                newSetting.cfgScale = self.cfgScale
+                newSetting.imgSteps = self.imgSteps
                 realm.add(newSetting)
             }
         }
     }
 
-    func loadCfgScale() {
+    func loadImgSteps() {
         let realm = try! Realm()
         if let setting = realm.objects(StableSettings.self).first {
-            self.cfgScale = setting.cfgScale
+            self.imgSteps = setting.imgSteps
         } else {
-            self.cfgScale = 3.5 // Default value
+            self.imgSteps = 25 // Default value
+        }
+    }
+
+    func saveTxtCfgScale() {
+        let realm = try! Realm()
+        try! realm.write {
+            if let setting = realm.objects(StableSettings.self).first {
+                setting.txtCfgScale = self.txtCfgScale
+            } else {
+                let newSetting = StableSettings()
+                newSetting.txtCfgScale = self.txtCfgScale
+                realm.add(newSetting)
+            }
+        }
+    }
+
+    func loadTxtCfgScale() {
+        let realm = try! Realm()
+        if let setting = realm.objects(StableSettings.self).first {
+            self.txtCfgScale = setting.txtCfgScale
+        } else {
+            self.txtCfgScale = 3.5 // Default value
+        }
+    }
+
+    func saveImgCfgScale() {
+        let realm = try! Realm()
+        try! realm.write {
+            if let setting = realm.objects(StableSettings.self).first {
+                setting.imgCfgScale = self.imgCfgScale
+            } else {
+                let newSetting = StableSettings()
+                newSetting.imgCfgScale = self.imgCfgScale
+                realm.add(newSetting)
+            }
+        }
+    }
+
+    func loadImgCfgScale() {
+        let realm = try! Realm()
+        if let setting = realm.objects(StableSettings.self).first {
+            self.imgCfgScale = setting.imgCfgScale
+        } else {
+            self.imgCfgScale = 3.5 // Default value
         }
     }
 
@@ -529,46 +653,90 @@ class StableSettingViewModel : ObservableObject {
     }
 
     // seed
-    public func saveSeed() {
+    public func saveTxtSeed() {
         let realm = try! Realm()
         try! realm.write {
             if let setting = realm.objects(StableSettings.self).first {
-                setting.seed = self.seed
+                setting.txtSeed = self.txtSeed
             } else {
                 let newSetting = StableSettings()
-                newSetting.seed = self.seed
+                newSetting.txtSeed = self.txtSeed
                 realm.add(newSetting)
             }
         }
     }
 
-    private func loadSeed() {
+    private func loadTxtSeed() {
         let realm = try! Realm()
         if let setting = realm.objects(StableSettings.self).first {
-            self.seed = setting.seed
+            self.txtSeed = setting.txtSeed
         } else {
-            self.seed = -1
+            self.txtSeed = -1
         }
     }
 
-    public func saveSelectedPromptStyles() {
+    // seed
+    public func saveImgSeed() {
         let realm = try! Realm()
         try! realm.write {
             if let setting = realm.objects(StableSettings.self).first {
-                setting.selectedPromptStyles.removeAll()
-                setting.selectedPromptStyles.append(objectsIn: self.selectedPromptStyles)
+                setting.imgSeed = self.imgSeed
             } else {
                 let newSetting = StableSettings()
-                newSetting.selectedPromptStyles.append(objectsIn: self.selectedPromptStyles)
+                newSetting.imgSeed = self.imgSeed
                 realm.add(newSetting)
             }
         }
     }
 
-    private func loadSelectedPromptStyles() {
+    private func loadImgSeed() {
         let realm = try! Realm()
         if let setting = realm.objects(StableSettings.self).first {
-            self.selectedPromptStyles = Array(setting.selectedPromptStyles)
+            self.imgSeed = setting.imgSeed
+        } else {
+            self.imgSeed = -1
+        }
+    }
+
+    public func saveTxtSelectedPromptStyles() {
+        let realm = try! Realm()
+        try! realm.write {
+            if let setting = realm.objects(StableSettings.self).first {
+                setting.txtSelectedPromptStyles.removeAll()
+                setting.txtSelectedPromptStyles.append(objectsIn: self.txtSelectedPromptStyles)
+            } else {
+                let newSetting = StableSettings()
+                newSetting.txtSelectedPromptStyles.append(objectsIn: self.txtSelectedPromptStyles)
+                realm.add(newSetting)
+            }
+        }
+    }
+
+    private func loadTxtSelectedPromptStyles() {
+        let realm = try! Realm()
+        if let setting = realm.objects(StableSettings.self).first {
+            self.txtSelectedPromptStyles = Array(setting.txtSelectedPromptStyles)
+        }
+    }
+
+    public func saveImgSelectedPromptStyles() {
+        let realm = try! Realm()
+        try! realm.write {
+            if let setting = realm.objects(StableSettings.self).first {
+                setting.imgSelectedPromptStyles.removeAll()
+                setting.imgSelectedPromptStyles.append(objectsIn: self.imgSelectedPromptStyles)
+            } else {
+                let newSetting = StableSettings()
+                newSetting.imgSelectedPromptStyles.append(objectsIn: self.imgSelectedPromptStyles)
+                realm.add(newSetting)
+            }
+        }
+    }
+
+    private func loadImgSelectedPromptStyles() {
+        let realm = try! Realm()
+        if let setting = realm.objects(StableSettings.self).first {
+            self.imgSelectedPromptStyles = Array(setting.imgSelectedPromptStyles)
         }
     }
 
@@ -728,25 +896,47 @@ class StableSettingViewModel : ObservableObject {
         }
     }
 
-    public func saveRestoreFaces() {
+    public func saveTxtRestoreFaces() {
         let realm = try! Realm()
         try! realm.write {
             if let setting = realm.objects(StableSettings.self).first {
-                setting.restoreFaces = self.restoreFaces
+                setting.txtRestoreFaces = self.txtRestoreFaces
             } else {
                 let newSetting = StableSettings()
-                newSetting.restoreFaces = self.restoreFaces
+                newSetting.txtRestoreFaces = self.txtRestoreFaces
                 realm.add(newSetting)
             }
         }
     }
 
-    private func loadRestoreFaces() {
+    private func loadTxtRestoreFaces() {
         let realm = try! Realm()
         if let setting = realm.objects(StableSettings.self).first {
-            self.restoreFaces = setting.restoreFaces
+            self.txtRestoreFaces = setting.txtRestoreFaces
         } else {
-            self.restoreFaces = false
+            self.txtRestoreFaces = false
+        }
+    }
+
+    public func saveImgRestoreFaces() {
+        let realm = try! Realm()
+        try! realm.write {
+            if let setting = realm.objects(StableSettings.self).first {
+                setting.imgRestoreFaces = self.imgRestoreFaces
+            } else {
+                let newSetting = StableSettings()
+                newSetting.imgRestoreFaces = self.imgRestoreFaces
+                realm.add(newSetting)
+            }
+        }
+    }
+
+    private func loadImgRestoreFaces() {
+        let realm = try! Realm()
+        if let setting = realm.objects(StableSettings.self).first {
+            self.imgRestoreFaces = setting.imgRestoreFaces
+        } else {
+            self.imgRestoreFaces = false
         }
     }
 

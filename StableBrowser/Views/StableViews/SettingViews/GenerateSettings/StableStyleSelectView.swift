@@ -6,9 +6,15 @@ enum EditPromptMode {
     case edit(LocalPromptStyle)
 }
 
+enum StyleSelectMode {
+    case txt2img
+    case img2img
+}
+
 struct StableStyleSelectView: View {
     var viewModel: StableSettingViewModel
-    @Binding var selectedPromptStyles: [String] 
+    var mode: StyleSelectMode
+    @Binding var selectedPromptStyles: [String]
     @Binding var localPromptStyles: [LocalPromptStyle]
     @Environment(\.presentationMode) var presentationMode
 
@@ -17,7 +23,6 @@ struct StableStyleSelectView: View {
     @State private var editMode: EditPromptMode = .add
     @State private var targetEdit: LocalPromptStyle?
     
-    
     var body: some View {
         Section {
             List {
@@ -25,11 +30,10 @@ struct StableStyleSelectView: View {
                     Button(action: {
                         if selectedPromptStyles.contains(style.name ?? "") {
                             selectedPromptStyles.removeAll { $0 == style.name }
-                            viewModel.saveSelectedPromptStyles()
                         } else {
                             selectedPromptStyles.append(style.name ?? "")
-                            viewModel.saveSelectedPromptStyles()
                         }
+                        saveSelectedStyles()
                     }) {
                         HStack {
                             Text(style.name ?? "")
@@ -57,8 +61,6 @@ struct StableStyleSelectView: View {
                     }
                     .frame(maxWidth: .infinity)
                 }
-
-                        
             }.animation(.default, value: localPromptStyles)
             .sheet(isPresented: $showEditPromptStyle) {
                 EditPromptStyleView(mode: editMode, viewModel: viewModel, localPromptStyles: $localPromptStyles)
@@ -85,11 +87,19 @@ struct StableStyleSelectView: View {
                 viewModel.migratePromptStyles()
             }, secondaryButton: .cancel())
         }
-        // add new button
         .navigationBarItems(
             trailing: NavigationLink(destination: EditPromptStyleView(mode: .add, viewModel: viewModel, localPromptStyles: $localPromptStyles)) {
                 Image(systemName: "plus.app.fill")
             }
         )
+    }
+    
+    private func saveSelectedStyles() {
+        switch mode {
+        case .txt2img:
+            viewModel.saveTxtSelectedPromptStyles()
+        case .img2img:
+            viewModel.saveImgSelectedPromptStyles()
+        }
     }
 }
