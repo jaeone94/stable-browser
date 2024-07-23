@@ -9,7 +9,7 @@
   </tr>
 </table>
 
-StableBrowser is an web browser application with integrated AI image generation capabilities. It combines traditional web browsing functionality with advanced features for AI-assisted image creation and manipulation.
+StableBrowser is a web browser application with integrated AI image generation capabilities. It combines traditional web browsing functionality with advanced features for AI-assisted image creation and manipulation.
 
 This app uses the API in [AUTOMATIC1111/stable-diffusion-webui](https://github.com/AUTOMATIC1111/stable-diffusion-webui) to generate images.    
   
@@ -28,6 +28,8 @@ This app uses the API in [AUTOMATIC1111/stable-diffusion-webui](https://github.c
 - [Installation](#installation)
 - [Usage](#usage)
 - [Components](#components)
+- [Beta Test](#beta-test)
+- [Contribution](#contribution)
 - [License](#license)
 
 ## Contact
@@ -71,13 +73,11 @@ You can easily collect a base image to use for Image to Image.
 2. Select the Img2Img or Txt2Img option from the menu.  
 ![menu_navigation](https://github.com/jaeone94/stable-browser/assets/89377375/62764299-00e1-45cb-aaee-2cd24a391ed4)
 
-
 3. Set the image generation parameters, such as prompts, and then generate the image.  
 ![image_generation](https://github.com/jaeone94/stable-browser/assets/89377375/1ee1f3fd-1278-49c9-9ec4-fc71aacab560)
 
 4. Use the Gallery to view and manage your generated images.  
 ![gallery_usage](https://github.com/jaeone94/stable-browser/assets/89377375/abb443ac-49d0-461a-b0cb-6795bd862d8c)
-
 
 ## Components
 
@@ -93,6 +93,13 @@ You can easily collect a base image to use for Image to Image.
 - `AuthenticationService`: Manages user authentication and secure data storage using KeychainSwift.
 - `PhotoManagementService`: Handles the storage and retrieval of images using RealmSwift.
 - `WebUIApi`: Interfaces with the Stable Diffusion web UI for AI image generation tasks.
+
+## Beta Test
+Public beta test link: [https://testflight.apple.com/join/5R8Z9JyS](https://testflight.apple.com/join/5R8Z9JyS)  
+You can access this link to try out new features under development. We are looking forward to your feedback on improvements.
+
+## Contribution
+If you wish to contribute to this app, please feel free to submit pull requests or issues. We welcome and appreciate your contributions.
 
 ## License
 This project is licensed under the MIT License.
