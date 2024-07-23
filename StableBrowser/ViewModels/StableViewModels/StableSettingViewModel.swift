@@ -103,18 +103,38 @@ class StableSettingViewModel : ObservableObject {
 
     
     public func tryAutoConnectToServer() {
-        if let url = connectedUrl {
-            let processedAddress = AddressProcessor.processAddress(url)
-            let api = WebUIApi.shared
-            api.setConnectionProperties(processedAddress)
+        guard let url = connectedUrl else {
+            DispatchQueue.main.async {
+                self.isConnected = false
+            }
+            print("Error: No connected URL available")
+            return
+        }
+        
+        let processedAddress = AddressProcessor.processAddress(url)
+        let api = WebUIApi.shared
+        
+        do {
+            try api.setConnectionProperties(processedAddress)
             
             Task {
                 await connectToServer(api: api)
             }
-        } else {
-            DispatchQueue.main.async {
-                self.isConnected = false
-            }
+        } catch ConnectionError.invalidAddress {
+            print("Error: Invalid address format")
+            setConnectionFailed()
+        } catch ConnectionError.invalidURL {
+            print("Error: Unable to create URL from address")
+            setConnectionFailed()
+        } catch {
+            print("Unexpected error: \(error.localizedDescription)")
+            setConnectionFailed()
+        }
+    }
+
+    private func setConnectionFailed() {
+        DispatchQueue.main.async {
+            self.isConnected = false
         }
     }
     
