@@ -58,6 +58,7 @@
 		C656109B2BA04457004BB444 /* WebViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C656109A2BA04457004BB444 /* WebViewManager.swift */; };
 		C65AEC3D2C4D1DFA006287D9 /* AddressProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C65AEC3C2C4D1DFA006287D9 /* AddressProcessor.swift */; };
 		C65AEC3F2C4D2557006287D9 /* AddressClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C65AEC3E2C4D2557006287D9 /* AddressClassifier.swift */; };
+		C65AEC412C4F3E8A006287D9 /* Lora.swift in Sources */ = {isa = PBXBuildFile; fileRef = C65AEC402C4F3E8A006287D9 /* Lora.swift */; };
 		C66BD3222BB5B9800074C5EF /* EditPromptStyleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C66BD3212BB5B9800074C5EF /* EditPromptStyleView.swift */; };
 		C66BD3242BB5C46D0074C5EF /* LocalPromptStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = C66BD3232BB5C46D0074C5EF /* LocalPromptStyle.swift */; };
 		C67B783B2BB14AE800B7EAAD /* ImageBasketView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C67B783A2BB14AE800B7EAAD /* ImageBasketView.swift */; };
@@ -178,6 +179,7 @@
 		C656109A2BA04457004BB444 /* WebViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewManager.swift; sourceTree = "<group>"; };
 		C65AEC3C2C4D1DFA006287D9 /* AddressProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressProcessor.swift; sourceTree = "<group>"; };
 		C65AEC3E2C4D2557006287D9 /* AddressClassifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressClassifier.swift; sourceTree = "<group>"; };
+		C65AEC402C4F3E8A006287D9 /* Lora.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lora.swift; sourceTree = "<group>"; };
 		C66BD3212BB5B9800074C5EF /* EditPromptStyleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditPromptStyleView.swift; sourceTree = "<group>"; };
 		C66BD3232BB5C46D0074C5EF /* LocalPromptStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalPromptStyle.swift; sourceTree = "<group>"; };
 		C67B783A2BB14AE800B7EAAD /* ImageBasketView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageBasketView.swift; sourceTree = "<group>"; };
@@ -398,6 +400,7 @@
 		C63AC86C2BAABDD80052B471 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				C65AEC402C4F3E8A006287D9 /* Lora.swift */,
 				C63AC86D2BAABDE70052B471 /* Options.swift */,
 				C63AC86F2BAAC3D90052B471 /* SDModel.swift */,
 				C63AC8792BAB105E0052B471 /* PromptStyle.swift */,
@@ -892,6 +895,7 @@
 				C6A3E6F32BC390D600C21826 /* AlbumEditView.swift in Sources */,
 				C63AC8732BAAC4510052B471 /* StableSettingViewModel.swift in Sources */,
 				C6FEA78C2BD79B8C0075685E /* BrowserHorizontalToolBar.swift in Sources */,
+				C65AEC412C4F3E8A006287D9 /* Lora.swift in Sources */,
 				C6ED0F632BBD81EA00A4EDD5 /* AlbumView.swift in Sources */,
 				C65610972BA0412C004BB444 /* WebViewModel+WKNavigationDelegate.swift in Sources */,
 				C60E09752BB08AA200A72244 /* InpaintingFillPicker.swift in Sources */,

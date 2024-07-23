@@ -140,6 +140,13 @@ struct StableImg2ImgView: View {
             .transition(.move(edge: .bottom).combined(with: .opacity))
             .animation(.easeInOut, value: uploadImagePopupVisible)
         }
+        .onChange(of: viewModel.baseImageFromResult) { oldValue, newValue in
+            if newValue.size.width != 0 {
+                self.importBaseImage(baseImage: newValue)
+                self.maskImage = nil
+                self.resizeScale = 1
+            }
+        }
     }
     
     func importBaseImage(baseImage: UIImage) {
@@ -232,6 +239,7 @@ struct StableImg2ImgView: View {
             styles: [],
             seed: viewModel.imgSeed,
             samplerName: viewModel.imgSelectedSampler,
+            scheduler: viewModel.imgSelectedScheduler,
             batchSize: batchCount,
             steps: viewModel.imgSteps,
             cfgScale: viewModel.imgCfgScale,
@@ -406,6 +414,9 @@ struct GenerateOptionsSection: View {
 struct PromptsSection: View {
     var parent: GenerateOptionsSection
     @ObservedObject var viewModel: StableSettingViewModel
+    @State var selectedLora: Lora? = nil
+    @State var selectedPromptType: String = "positive"
+    @State var loraStrength: Float32 = 1.0
     
     var body: some View {
         DisclosureGroup("Prompts") {
@@ -427,6 +438,57 @@ struct PromptsSection: View {
                 TextEditor(text: $viewModel.imgNegativePrompt)
                     .frame(height: 100)
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+            }
+            
+            DisclosureGroup("Loras") {
+                ForEach(viewModel.loras, id: \.self) { lora in
+                    Button {
+                        if self.selectedLora == lora {
+                            withAnimation {
+                                self.selectedLora = nil
+                            }
+                        }else {
+                            withAnimation {
+                                self.selectedLora = lora
+                            }
+                        }
+                    } label: {
+                        Text(lora.name).tag(lora.id)
+                            .foregroundColor(lora == self.selectedLora ? Color.accentColor : Color.primary)
+                    }
+                }
+                
+                if selectedLora != nil {
+                    let strLoraStrength = String(format: "%.1f", loraStrength)
+                    VStack {
+                        Text("Strength : \(strLoraStrength)")
+                        Slider(value: $loraStrength, in: 0.1...2, step: 0.1)
+                    }
+                    
+                    HStack {
+                        // Choose positive or negative prompt
+                        Picker("Prompt Type", selection: $selectedPromptType) {
+                            Text("Positive").tag("positive")
+                            Text("Negative").tag("negative")
+                        }
+                    }
+                    
+                    Button {
+                        if let lora = selectedLora {
+                            if selectedPromptType == "positive" {
+                                viewModel.imgPrompt += ", <lora:\(lora.name):\(strLoraStrength)>"
+                            } else {
+                                viewModel.imgNegativePrompt += ", <lora:\(lora.name):\(strLoraStrength)>"
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Text("Append Lora")
+                            Spacer()
+                        }
+                    }
+                }
             }
             
             HStack {
@@ -459,6 +521,12 @@ struct SamplingOptionsSection: View {
             Picker("Sampler", selection: $viewModel.imgSelectedSampler) {
                 ForEach(viewModel.samplers, id: \.self) { sampler in
                     Text(sampler).tag(sampler)
+                }
+            }
+            
+            Picker("Scheduler", selection: $viewModel.imgSelectedScheduler) {
+                ForEach(viewModel.schedulers, id: \.self) { scheduler in
+                    Text(scheduler).tag(scheduler as String?)
                 }
             }
 

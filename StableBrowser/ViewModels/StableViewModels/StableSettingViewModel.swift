@@ -14,8 +14,9 @@ class StableSettingViewModel : ObservableObject {
     @Published var localPromptStyles: [LocalPromptStyle] = []
     @Published var samplers: [String] = []
     @Published var sdVAEs: [String] = []
-    @Published var loras: [String] = []
+    @Published var loras: [Lora] = []
     @Published var embeddings: [String] = []
+    @Published var schedulers: [String] = []
 
     // Common Image generate properties
     @Published var selectedSDModel: String = ""
@@ -25,6 +26,7 @@ class StableSettingViewModel : ObservableObject {
     // Txt2Img specific properties
     @Published var txtSelectedPromptStyles: [String] = []
     @Published var txtSelectedSampler: String = "Euler a"
+    @Published var txtSelectedScheduler: String = "automatic"
     @Published var txtSteps: Int = 20
     @Published var txtCfgScale: Double = 7.5
     @Published var txtSeed: Int = -1
@@ -45,6 +47,7 @@ class StableSettingViewModel : ObservableObject {
     // Img2Img specific properties
     @Published var imgSelectedPromptStyles: [String] = []
     @Published var imgSelectedSampler: String = "Euler a"
+    @Published var imgSelectedScheduler: String = "automatic"
     @Published var imgSteps: Int = 20
     @Published var imgCfgScale: Double = 7.5
     @Published var imgSeed: Int = -1
@@ -139,6 +142,7 @@ class StableSettingViewModel : ObservableObject {
             await getSamplers()
             await getSDVAE()
             await getLoras()
+            await getScheduler()
             
         } else {
             await MainActor.run {
@@ -329,6 +333,22 @@ class StableSettingViewModel : ObservableObject {
             if let samplers = await api.getSamplers() {
                 await MainActor.run {
                     self.samplers = samplers
+                }
+            }
+        }
+    }
+    
+    func getScheduler() async {
+        if let api = webUIApi {
+            if let schedulers = await api.getSchedulers() {
+                await MainActor.run {
+                    self.schedulers = schedulers
+                    if !schedulers.contains(self.txtSelectedScheduler) {
+                        self.txtSelectedScheduler = "automatic"
+                    }
+                    if !schedulers.contains(self.imgSelectedScheduler) {
+                        self.imgSelectedScheduler = "automatic"
+                    }
                 }
             }
         }

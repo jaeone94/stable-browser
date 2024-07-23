@@ -106,6 +106,7 @@ struct StableTxt2ImgView: View {
             seed_resize_from_h: 0,
             seed_resize_from_w: 0,
             sampler_name: viewModel.txtSelectedSampler,
+            scheduler: viewModel.txtSelectedScheduler,
             batch_size: viewModel.txt2imgBatchSize,
             n_iter: 1,
             steps: viewModel.txtSteps,
@@ -176,6 +177,9 @@ struct StableTxt2ImgView: View {
 
 struct TxtPromptsSection: View {
     @ObservedObject var viewModel: StableSettingViewModel
+    @State var selectedLora: Lora? = nil
+    @State var selectedPromptType: String = "positive"
+    @State var loraStrength: Float32 = 1.0
     
     var body: some View {
         DisclosureGroup("Prompts") {
@@ -197,6 +201,57 @@ struct TxtPromptsSection: View {
                 TextEditor(text: $viewModel.txt2imgNegativePrompt)
                     .frame(height: 100)
                     .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+            }
+            
+            DisclosureGroup("Loras") {
+                ForEach(viewModel.loras, id: \.self) { lora in
+                    Button {
+                        if self.selectedLora == lora {
+                            withAnimation {
+                                self.selectedLora = nil
+                            }
+                        }else {
+                            withAnimation {
+                                self.selectedLora = lora
+                            }
+                        }
+                    } label: {
+                        Text(lora.name).tag(lora.id)
+                            .foregroundColor(lora == self.selectedLora ? Color.accentColor : Color.primary)
+                    }
+                }
+                
+                if selectedLora != nil {
+                    let strLoraStrength = String(format: "%.1f", loraStrength)
+                    VStack {
+                        Text("Strength : \(strLoraStrength)")
+                        Slider(value: $loraStrength, in: 0.1...2, step: 0.1)
+                    }
+                    
+                    HStack {
+                        // Choose positive or negative prompt
+                        Picker("Prompt Type", selection: $selectedPromptType) {
+                            Text("Positive").tag("positive")
+                            Text("Negative").tag("negative")
+                        }
+                    }
+                    
+                    Button {
+                        if let lora = selectedLora {
+                            if selectedPromptType == "positive" {
+                                viewModel.txt2imgPrompt += ", <lora:\(lora.name):\(strLoraStrength)>"
+                            } else {
+                                viewModel.txt2imgNegativePrompt += ", <lora:\(lora.name):\(strLoraStrength)>"
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Spacer()
+                            Text("Append Lora")
+                            Spacer()
+                        }
+                    }
+                }
             }
             
             HStack {
@@ -229,6 +284,12 @@ struct TxtSamplingOptionsSection: View {
             Picker("Sampler", selection: $viewModel.txtSelectedSampler) {
                 ForEach(viewModel.samplers, id: \.self) { sampler in
                     Text(sampler).tag(sampler)
+                }
+            }
+            
+            Picker("Scheduler", selection: $viewModel.txtSelectedScheduler) {
+                ForEach(viewModel.schedulers, id: \.self) { scheduler in
+                    Text(scheduler).tag(scheduler as String?)
                 }
             }
 
