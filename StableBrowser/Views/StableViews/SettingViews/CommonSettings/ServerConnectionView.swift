@@ -175,6 +175,7 @@ struct ServerConnectionView: View {
         await stableSettingViewModel.getSamplers()
         await stableSettingViewModel.getSDVAE()
         await stableSettingViewModel.getLoras()
+        await stableSettingViewModel.getScheduler()
         
         await MainActor.run {
             OverlayService.shared.hideOverlaySpinner()
