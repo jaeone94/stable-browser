@@ -29,6 +29,11 @@ enum Img2ImgMode {
     case inpaint
 }
 
+enum ConnectionError: Error {
+    case invalidAddress
+    case invalidURL
+}
+
 
 class WebUIApi: ObservableObject {
     static let shared = WebUIApi()
@@ -51,18 +56,29 @@ class WebUIApi: ObservableObject {
         self.session = URLSession.shared
     }
     
-    public func setConnectionProperties(_ processedAddress: ProcessedAddress, sampler: String = "Euler a", steps: Int = 20) {
-        if processedAddress.hasPort {
-            self.baseURL = URL(string: "\(processedAddress.scheme)://\(processedAddress.cleanAddress):\(processedAddress.port)/sdapi/v1")!
-        }else {
-            self.baseURL = URL(string: "\(processedAddress.scheme)://\(processedAddress.cleanAddress)/sdapi/v1")!
+    public func setConnectionProperties(_ processedAddress: ProcessedAddress, sampler: String = "Euler a", steps: Int = 20) throws {
+        guard let baseURLString = createBaseURLString(from: processedAddress) else {
+            throw ConnectionError.invalidAddress
         }
         
+        guard let baseURL = URL(string: baseURLString) else {
+            throw ConnectionError.invalidURL
+        }
+        
+        self.baseURL = baseURL
         self.defaultSampler = sampler
         self.defaultSteps = steps
-        
         self.session = URLSession.shared
     }
+    
+    private func createBaseURLString(from processedAddress: ProcessedAddress) -> String? {
+        if processedAddress.hasPort {
+            return "\(processedAddress.scheme)://\(processedAddress.cleanAddress):\(processedAddress.port)/sdapi/v1"
+        } else {
+            return "\(processedAddress.scheme)://\(processedAddress.cleanAddress)/sdapi/v1"
+        }
+    }
+
     
     private func toApiResult(_ data: Data?, _ response: URLResponse?, _ error: Error?) -> WebUIApiResult? {
         guard let data = data, let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {

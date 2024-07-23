@@ -126,46 +126,74 @@ struct ServerConnectionView: View {
         if stableSettingViewModel.webUIApi == nil {
             stableSettingViewModel.webUIApi = WebUIApi.shared
         }
-        if let api = stableSettingViewModel.webUIApi {
-            api.setConnectionProperties(processedAddress)
+        
+        guard let api = stableSettingViewModel.webUIApi else {
+            handleConnectionFailure("WebUIApi is not initialized")
+            return
+        }
+        
+        do {
+            try api.setConnectionProperties(processedAddress)
             
             Task {
-                if let options = await api.getOptions() {
-                    stableSettingViewModel.webUIApi = api
-                    stableSettingViewModel.connectedUrl = address
-                    isConnected = true
-                    
-                    DispatchQueue.main.async {
-                        stableSettingViewModel.isConnected = true
-                        stableSettingViewModel.options = options
-                        stableSettingViewModel.selectedSDModel = options.sd_model_checkpoint ?? ""
-                        self.isConnected = true
-                    }
-                    stableSettingViewModel.saveLastUrl()
-                    
-                    // Call the getSDModels function after successful server connection
-                    await stableSettingViewModel.getSDModels()
-                    await stableSettingViewModel.getPromptStyles()
-                    await stableSettingViewModel.getSamplers()
-                    await stableSettingViewModel.getSDVAE()
-                    await stableSettingViewModel.getLoras()
-                    
-                    OverlayService.shared.hideOverlaySpinner()
-                    Toast.shared.present(
-                        title: "Server connected",
-                        symbol: "checkmark.circle.fill",
-                        isUserInteractionEnabled: true,
-                        timing: .medium
-                    )
-                } else {
-                    DispatchQueue.main.async {
-                        stableSettingViewModel.isConnected = false
-                        isConnected = false
-                        OverlayService.shared.hideOverlaySpinner()
-                        showAlert = true
-                    }
-                }
+                await attemptConnection(api: api, address: address)
             }
+        } catch ConnectionError.invalidAddress {
+            handleConnectionFailure("Invalid address format")
+        } catch ConnectionError.invalidURL {
+            handleConnectionFailure("Unable to create URL from address")
+        } catch {
+            handleConnectionFailure("Unexpected error: \(error.localizedDescription)")
+        }
+    }
+
+    private func attemptConnection(api: WebUIApi, address: String) async {
+        if let options = await api.getOptions() {
+            await handleSuccessfulConnection(api: api, address: address, options: options)
+        } else {
+            handleConnectionFailure("Failed to get options from server")
+        }
+    }
+
+    private func handleSuccessfulConnection(api: WebUIApi, address: String, options: Options) async {
+        stableSettingViewModel.webUIApi = api
+        stableSettingViewModel.connectedUrl = address
+        isConnected = true
+        
+        await MainActor.run {
+            stableSettingViewModel.isConnected = true
+            stableSettingViewModel.options = options
+            stableSettingViewModel.selectedSDModel = options.sd_model_checkpoint ?? ""
+            self.isConnected = true
+        }
+        
+        stableSettingViewModel.saveLastUrl()
+        
+        // Call the getSDModels function after successful server connection
+        await stableSettingViewModel.getSDModels()
+        await stableSettingViewModel.getPromptStyles()
+        await stableSettingViewModel.getSamplers()
+        await stableSettingViewModel.getSDVAE()
+        await stableSettingViewModel.getLoras()
+        
+        await MainActor.run {
+            OverlayService.shared.hideOverlaySpinner()
+            Toast.shared.present(
+                title: "Server connected",
+                symbol: "checkmark.circle.fill",
+                isUserInteractionEnabled: true,
+                timing: .medium
+            )
+        }
+    }
+
+    private func handleConnectionFailure(_ message: String) {
+        DispatchQueue.main.async {
+            stableSettingViewModel.isConnected = false
+            isConnected = false
+            OverlayService.shared.hideOverlaySpinner()
+            showAlert = true
+            print("Connection failed: \(message)")
         }
     }
 }
