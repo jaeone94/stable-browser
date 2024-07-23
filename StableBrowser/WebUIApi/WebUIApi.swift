@@ -129,6 +129,10 @@ class WebUIApi: ObservableObject {
     func getSamplers() async -> [String]? {
         return await sendGetRequest(path: "samplers", key: "name")
     }
+    
+    func getSchedulers() async -> [String]? {
+        return await sendGetRequest(path: "schedulers", key: "name")
+    }
 
     func getSDModels() async -> [SDModel]? {
         return await sendGetRequest(path: "sd-models")
@@ -154,8 +158,8 @@ class WebUIApi: ObservableObject {
         return await sendGetRequest(path: "latent-upscale-modes")
     }
 
-    func getLoras() async -> [String]? {
-        return await sendGetRequest(path: "loras", key: "name")
+    func getLoras() async -> [Lora]? {
+        return await sendGetRequest(path: "loras")
     }
 
     func getArtistCategories() async -> [String]? {

@@ -7,7 +7,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         Realm.Configuration.defaultConfiguration = Realm.Configuration(
-            schemaVersion: 11, // Must be higher than previous schema version.
+            schemaVersion: 12, // Must be higher than previous schema version.
             migrationBlock: { migration, oldSchemaVersion in
                 if (oldSchemaVersion < 1) {
                     // No changes needed but migration to new schema version is required.
