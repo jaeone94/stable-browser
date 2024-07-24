@@ -25,6 +25,7 @@ class StableSettings: Object {
     @Persisted var txt2imgHrSecondPassSteps: Int = 0
     @Persisted var txt2imgHrResizeX: Int = 0
     @Persisted var txt2imgHrResizeY: Int = 0
+    @Persisted var txtSelectedScheduler: String = "automatic"
 
     // Img2Img specific settings
     @Persisted var imgSelectedSampler: String = "Euler a"
@@ -47,4 +48,5 @@ class StableSettings: Object {
     @Persisted var scheduleBias: Double = 1.0
     @Persisted var preservationStrength: Double = 0.5
     @Persisted var transitionContrastBoost: Double = 4.0
+    @Persisted var imgSelectedScheduler: String = "automatic"
 }
