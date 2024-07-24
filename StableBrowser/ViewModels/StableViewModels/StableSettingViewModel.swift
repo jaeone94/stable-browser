@@ -134,6 +134,7 @@ class StableSettingViewModel : ObservableObject {
 
     private func setConnectionFailed() {
         DispatchQueue.main.async {
+            self.connectedUrl = ""
             self.isConnected = false
         }
     }
@@ -227,6 +228,7 @@ class StableSettingViewModel : ObservableObject {
                 setting.txt2imgHrSecondPassSteps = self.txt2imgHrSecondPassSteps
                 setting.txt2imgHrResizeX = self.txt2imgHrResizeX
                 setting.txt2imgHrResizeY = self.txt2imgHrResizeY
+                setting.txtSelectedScheduler = self.txtSelectedScheduler
             }
         }
     }
@@ -256,6 +258,7 @@ class StableSettingViewModel : ObservableObject {
                 setting.scheduleBias = self.scheduleBias
                 setting.preservationStrength = self.preservationStrength
                 setting.transitionContrastBoost = self.transitionContrastBoost
+                setting.imgSelectedScheduler = self.imgSelectedScheduler
             }
         }
     }
@@ -290,6 +293,7 @@ class StableSettingViewModel : ObservableObject {
             self.txt2imgHrSecondPassSteps = setting.txt2imgHrSecondPassSteps
             self.txt2imgHrResizeX = setting.txt2imgHrResizeX
             self.txt2imgHrResizeY = setting.txt2imgHrResizeY
+            self.txtSelectedScheduler = setting.txtSelectedScheduler
         }
     }
 
@@ -316,6 +320,7 @@ class StableSettingViewModel : ObservableObject {
             self.scheduleBias = setting.scheduleBias
             self.preservationStrength = setting.preservationStrength
             self.transitionContrastBoost = setting.transitionContrastBoost
+            self.imgSelectedScheduler = setting.imgSelectedScheduler
         }
     }
 
