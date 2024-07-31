@@ -46,57 +46,58 @@ struct BrowserFloatingButton: View {
                             Spacer()
                         }
                         ZStack {
-                            Button(action: {
-                                withAnimation {
-                                    injectHistoryService.isAutoInjectMode.toggle()
-                                    if injectHistoryService.isAutoInjectMode {
-                                        parent.webViewModel.tryAutoInjectImage()
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                            parent.webViewModel.injectAllImages()
-                                        }
-                                    }
-                                }
-                            }) {
-                                HStack(spacing:0) {
-                                    Spacer()
-                                    Image(systemName: injectHistoryService.isAutoInjectMode ? "square.on.square.dashed" : "rectangle.on.rectangle.slash")
-                                        .font(.system(size: 25))
-                                        .foregroundColor(Color.white).opacity(1)
-                                    Spacer()
-                                }
-                                .frame(width: 50, height: 50)
-                                .background(Color.black).opacity(0.8)
-                                .clipShape(Circle())
-                                .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
-                            }
-                            .overlay {
-                                HStack {
-                                    if !isPortraitMode {
-                                        Spacer()
-                                    }
-                                    Text(injectHistoryService.isAutoInjectMode ? "Auto-inject : On" : "Auto-inject : Off")
-                                        .font(.footnote)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(.black.opacity(0.8))
-                                    if isPortraitMode {
-                                        Spacer()
-                                    }
-                                }
-                                .frame(width: 140)
-                                .offset(x: isPortraitMode ? 100: -100)
-                                .onTapGesture {
-                                    withAnimation {
-                                        injectHistoryService.isAutoInjectMode.toggle()
-                                        if injectHistoryService.isAutoInjectMode {
-                                            parent.webViewModel.tryAutoInjectImage()
-                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                                parent.webViewModel.injectAllImages()
-                                            }
-                                        }
-                                    }                                    
-                                }
-                            }
-                            .offset(y: isVisible ? offsetDistance * -4 : 0)
+                              // Disable Inject Mode
+//                            Button(action: {
+//                                withAnimation {
+//                                    injectHistoryService.isAutoInjectMode.toggle()
+//                                    if injectHistoryService.isAutoInjectMode {
+//                                        parent.webViewModel.tryAutoInjectImage()
+//                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+//                                            parent.webViewModel.injectAllImages()
+//                                        }
+//                                    }
+//                                }
+//                            }) {
+//                                HStack(spacing:0) {
+//                                    Spacer()
+//                                    Image(systemName: injectHistoryService.isAutoInjectMode ? "square.on.square.dashed" : "rectangle.on.rectangle.slash")
+//                                        .font(.system(size: 25))
+//                                        .foregroundColor(Color.white).opacity(1)
+//                                    Spacer()
+//                                }
+//                                .frame(width: 50, height: 50)
+//                                .background(Color.black).opacity(0.8)
+//                                .clipShape(Circle())
+//                                .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
+//                            }
+//                            .overlay {
+//                                HStack {
+//                                    if !isPortraitMode {
+//                                        Spacer()
+//                                    }
+//                                    Text(injectHistoryService.isAutoInjectMode ? "Auto-inject : On" : "Auto-inject : Off")
+//                                        .font(.footnote)
+//                                        .fontWeight(.semibold)
+//                                        .foregroundColor(.black.opacity(0.8))
+//                                    if isPortraitMode {
+//                                        Spacer()
+//                                    }
+//                                }
+//                                .frame(width: 140)
+//                                .offset(x: isPortraitMode ? 100: -100)
+//                                .onTapGesture {
+//                                    withAnimation {
+//                                        injectHistoryService.isAutoInjectMode.toggle()
+//                                        if injectHistoryService.isAutoInjectMode {
+//                                            parent.webViewModel.tryAutoInjectImage()
+//                                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+//                                                parent.webViewModel.injectAllImages()
+//                                            }
+//                                        }
+//                                    }                                    
+//                                }
+//                            }
+//                            .offset(y: isVisible ? offsetDistance * -4 : 0)
                             
                             
                             Button(action: {
