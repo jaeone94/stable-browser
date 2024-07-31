@@ -212,7 +212,7 @@ struct PhotoView: View {
                             Spacer()
                         }
                         
-                        HStack(spacing: 30) {
+                        HStack {
                             Button(action: {
                                 item = OpenPhotoActivityItem(images: [imageViewModel.selectedPhotos[currentIndex]])
                             }) {
@@ -275,7 +275,7 @@ struct PhotoView: View {
                                 Image(systemName: "trash")
                                     .foregroundColor(.white)
                                     .font(.title2)
-                            }
+                            }                            
                         }
                         .transition(.opacity)
                         .contentShape(Rectangle())
